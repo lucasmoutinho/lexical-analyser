@@ -4,112 +4,123 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-stringLen = 0
+int stringLen = 0;
+char openParenthesis[] = "(";
+char closeParenthesis[] = ")";
 
 %}
 
-SEPARATOR [{}();] // arrumar na gramática
+SEPARATOR [{}();]
+/*arrumar na gramatica*/
 DELIM [ \n\t]
-WHITESPACE [{DELIM}+] // arrumar na gramática
+WHITESPACE {DELIM}+
+/*arrumar na gramatica*/
 
 LETTER [a-zA-Z]
+UNDERSCORE "_"
 DIGIT [0-9]
 
-ID {LETTER}({LETTER}|{DIGIT})*
-INT "-"?{DIGIT}+ //arrumar na gramatica
+INT "-"?{DIGIT}+
+/*arrumar na gramatica*/
 FLOAT "-"?{DIGIT}+"."({DIGIT}*)?
 BOOL "true"|"false"
-%x STRING //arrumar na gramatica
-TYPE "int"|"float"|"bool"|"void"|"string" // arrumar string na gramatica
+%x STRING 
+/*arrumar na gramatica*/
+TYPE "int"|"float"|"bool"|"void"|"string" 
+/*arrumar na gramatica*/
 
 STMT "if"|"while"|"else"|"return"|"for"|"print"|"scan"|"strUpper"|"strLower"
 OP "+"|"-"|"*"|"/"
+ASSIGN "="
 RELOP "<="|"=="|">="|">"|"<"|"!="
-LOG "and" | "or"
-OPASSIGN "=" // arrumar na gramatica
+LOG "and"|"or"
+/*arrumar na gramatica*/
 
-%x COMMENT //arrumar na gramática
+ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
+
+%x COMMENT
+/*arrumar na gramatica*/
 
 %%
 
-{SEPARATOR} {}
+{SEPARATOR} { }
 
-{WHITESPACE} {}
-
-{ID} {
-    printf("ID  (%s) LENGTH %d\n", yytext, yyleng); 
-}
+{WHITESPACE} { }
 
 {INT} {
-    printf("INT (%s) LENGTH %d\n", yytext, yyleng); 
+    printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng); 
 }
 
 {FLOAT} {
-    printf("FLOAT   (%s) LENGTH %d\n", yytext, yyleng); 
+    printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng); 
 }
 
 {BOOL} {
-    printf("BOOL   (%s) LENGTH %d\n", yytext, yyleng); 
+    printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng); 
 }
 
 \" {
-    printf("STRING  (%c)", yytext);
+    printf("STRING\t\t%s%s", openParenthesis, yytext);
     stringLen += 1;
     BEGIN(STRING);
 }
 
 <STRING>\" {
-    stringLen += 1
-    printf("(%c) LENGTH %d\n", yytext, stringLen);
-    stringLen = 0
+    stringLen += 1;
+    printf("%s%s LENGTH %d\n", yytext, closeParenthesis, stringLen);
+    stringLen = 0;
     BEGIN(INITIAL);
 }
 
 <STRING>\n {
-    printf("(%c)", yytext);
+    printf("%s", yytext);
     stringLen += 1;
 }
 
 <STRING>. {
-    printf("(%c)", yytext);
+    printf("%s", yytext);
     stringLen += 1;
 }
 
 {TYPE} {
-    printf("TYPE    (%s) LENGTH %d\n", yytext, yyleng);
+    printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 
 {STMT} {
-    printf("STMT    (%s) LENGTH %d\n", yytext, yyleng);
+    printf("STMT\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 
 {OP} {
-    printf("OP  (%s) LENGTH %d\n", yytext, yyleng);
+    printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+}
+
+{ASSIGN} {
+    printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 
 {RELOP} {
-    printf("RELOP   (%s) LENGTH %d\n", yytext, yyleng);
+    printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 
 {LOG} {
-    printf("LOG (%s) LENGTH %d\n", yytext, yyleng);
+    printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 
-{OPASSIGN} {
-    printf("OPASSIGN    (%s) LENGTH %d\n", yytext, yyleng);
+{ID} {
+    printf("ID\t\t(%s) LENGTH %d\n", yytext, yyleng); 
 }
 
 "/*" {
-    BEGIN(C_COMMENT);
+    BEGIN(COMMENT);
 }
 
 <COMMENT>"*/" {
     BEGIN(INITIAL);
 }
 
-<COMMENT>\n {}
+<COMMENT>\n { }
 
-<COMMENT>. {}
+<COMMENT>. { }
 
 %%
 

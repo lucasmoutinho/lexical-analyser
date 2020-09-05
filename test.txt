@@ -3,6 +3,11 @@ string upper_text;
 int inputInteger;
 float outputInteger;
 bool always_true = true;
+bool always_false = false;
+
+/* comentario 
+    comentario
+*/
 
 text = "The path of the 
 righteous man";
@@ -17,6 +22,6 @@ if(strUpper(text) == upper_text){
     print("\n");
 }
 
-if(always_true){
+if(always_true or always_false){
     print("Sempre True");
 }
