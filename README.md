@@ -7,5 +7,5 @@
 --
 lex lexical.l
 gcc lex.yy.c -ll
-./a.out
+./a.out test.txt
 --

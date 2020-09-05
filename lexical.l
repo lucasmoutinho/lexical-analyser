@@ -8,10 +8,7 @@ stringLen = 0
 
 %}
 
-SEPARATOR [<>,.;:]
-PARENTHESIS [()] 
-BRACKETS [\[\]]
-CURLY [{}] // arrumar na gramatica
+SEPARATOR [{}();] // arrumar na gramática
 DELIM [ \n\t]
 WHITESPACE [{DELIM}+] // arrumar na gramática
 
@@ -29,24 +26,13 @@ STMT "if"|"while"|"else"|"return"|"for"|"print"|"scan"|"strUpper"|"strLower"
 OP "+"|"-"|"*"|"/"
 RELOP "<="|"=="|">="|">"|"<"|"!="
 LOG "and" | "or"
+OPASSIGN "=" // arrumar na gramatica
 
 %x COMMENT //arrumar na gramática
 
 %%
 
 {SEPARATOR} {}
-
-{PARENTHESIS} {
-    printf("PARENTHESIS (%s) LENGTH %d\n", yytext, yyleng);
-}
-
-{BRACKETS} {
-    printf("BRACKETS    (%s) LENGTH %d\n", yytext, yyleng);
-}
-
-{CURLY} {
-    printf("CURLY   (%s) LENGTH %d\n", yytext, yyleng);
-}
 
 {WHITESPACE} {}
 
@@ -107,6 +93,10 @@ LOG "and" | "or"
 
 {LOG} {
     printf("LOG (%s) LENGTH %d\n", yytext, yyleng);
+}
+
+{OPASSIGN} {
+    printf("OPASSIGN    (%s) LENGTH %d\n", yytext, yyleng);
 }
 
 "/*" {

@@ -1,0 +1,22 @@
+string text;
+string upper_text;
+int inputInteger;
+float outputInteger;
+bool always_true = true;
+
+text = "The path of the 
+righteous man";
+upper_text = "THE PATH OF THE RIGHTEOUS MAN";
+print("Enter an integer: ");
+scan(inputInteger);
+outputInteger = inputInteger * 2.0;
+
+if(strUpper(text) == upper_text){
+    print("Comparison Success, your number doubled is: ");
+    print(outputInteger);
+    print("\n");
+}
+
+if(always_true){
+    print("Sempre True");
+}
