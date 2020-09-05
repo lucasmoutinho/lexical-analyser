@@ -7,12 +7,24 @@
 int stringLen = 0;
 char openParenthesis[] = "(";
 char closeParenthesis[] = ")";
+int line = 1;
+int error_pos = 0;
+
+struct lexError {
+    char symbol[100];
+    char type[100];
+    char message[100];
+    int line;
+};
+
+struct lexError errors[100];
 
 %}
 
+EOL \n
 SEPARATOR [{}();]
 /*arrumar na gramatica*/
-DELIM [ \n\t]
+DELIM [ \t]
 WHITESPACE {DELIM}+
 /*arrumar na gramatica*/
 
@@ -42,6 +54,10 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 /*arrumar na gramatica*/
 
 %%
+
+{EOL} {
+    line++;
+}
 
 {SEPARATOR} { }
 
@@ -75,6 +91,7 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 <STRING>\n {
     printf("%s", yytext);
     stringLen += 1;
+    line++;
 }
 
 <STRING>. {
@@ -118,11 +135,29 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
     BEGIN(INITIAL);
 }
 
-<COMMENT>\n { }
+<COMMENT>\n {line++;}
 
 <COMMENT>. { }
 
+. { 
+    struct lexError error; 
+    strcpy(error.symbol, yytext);
+    strcpy(error.type, "NO_SIMBOL");
+    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
+    error.line = line;
+    errors[error_pos] = error;
+    error_pos++;
+}
+
 %%
+
+void showError(struct lexError error, int current_error){
+    printf("------ERROR %d--------\n", current_error + 1);
+    printf("Simbolo: %s\n", error.symbol);
+    printf("%s\n", error.message);
+    printf("Line: %d\n", error.line);
+    printf("----------------------\n");
+}
 
 int main( int argc, char **argv ) {
     ++argv, --argc;
@@ -131,4 +166,14 @@ int main( int argc, char **argv ) {
     else
         yyin = stdin;
     yylex();
+
+    if(error_pos > 0){
+        printf("----------------\n");
+        printf("Number of errors: %d\n\n", error_pos);
+        int current_error = 0;
+        while(current_error < error_pos){
+            showError(errors[current_error], current_error);
+            current_error++;
+        }
+    }
 }
