@@ -3,7 +3,7 @@ string upper_text;
 int inputInteger;
 float outputInteger;
 bool always_true = true;
-bool always_false = false;
+bool always_false = not true;
 
 /* comentario 
     comentario

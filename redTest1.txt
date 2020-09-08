@@ -1,0 +1,15 @@
+string text;
+string upper_text;
+int inputInteger;
+float outputInteger;
+
+text = "The path of the righteous man";
+upper_text = "THE PATH OF THE RIGHTEOUS MAN";
+write("Enter an integer: ");
+read(!inputInteger);
+outputInteger = inputInteger * 2.0;
+
+if(strUpper(text) == upper_text){
+    write("Comparison Success, your number doubled is: ");
+    write(outputInteger);
+}

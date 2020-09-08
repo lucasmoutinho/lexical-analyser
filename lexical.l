@@ -22,7 +22,7 @@ struct lexError errors[100];
 %}
 
 EOL \n
-SEPARATOR [{}();]
+SEP [{}();]
 /*arrumar na gramatica*/
 DELIM [ \t]
 WHITESPACE {DELIM}+
@@ -45,7 +45,7 @@ STMT "if"|"while"|"else"|"return"|"for"|"print"|"scan"|"strUpper"|"strLower"
 OP "+"|"-"|"*"|"/"
 ASSIGN "="
 RELOP "<="|"=="|">="|">"|"<"|"!="
-LOG "and"|"or"
+LOG "and"|"or"|"not"
 /*arrumar na gramatica*/
 
 ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
@@ -59,7 +59,9 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
     line++;
 }
 
-{SEPARATOR} { }
+{SEP} {
+    printf("SEP\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+}
 
 {WHITESPACE} { }
 
