@@ -23,32 +23,28 @@ struct lexError errors[100];
 
 EOL \n
 SEP [{}();]
-/*arrumar na gramatica*/
 DELIM [ \t]
 WHITESPACE {DELIM}+
-/*arrumar na gramatica*/
 
 LETTER [a-zA-Z]
 UNDERSCORE "_"
 DIGIT [0-9]
 
 INT "-"?{DIGIT}+
-/*arrumar na gramatica*/
 FLOAT "-"?{DIGIT}+"."({DIGIT}*)?
 BOOL "true"|"false"
 %x STRING 
-/*arrumar na gramatica*/
 TYPE "int"|"float"|"bool"|"void"|"string" 
-/*arrumar na gramatica*/
 
 STMT "if"|"while"|"else"|"return"|"for"|"print"|"scan"|"strUpper"|"strLower"
 OP "+"|"-"|"*"|"/"
 ASSIGN "="
 RELOP "<="|"=="|">="|">"|"<"|"!="
 LOG "and"|"or"|"not"
-/*arrumar na gramatica*/
 
 ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
+
+SYMBOL_ERROR {DIGIT}+({LETTER}|{UNDERSCORE})+
 
 %x COMMENT
 /*arrumar na gramatica*/
@@ -127,6 +123,16 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 
 {ID} {
     printf("ID\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+}
+
+{SYMBOL_ERROR} {
+    struct lexError error; 
+    strcpy(error.symbol, yytext);
+    strcpy(error.type, "NO_SIMBOL");
+    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
+    error.line = line;
+    errors[error_pos] = error;
+    error_pos++;
 }
 
 "/*" {
