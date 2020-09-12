@@ -45,7 +45,7 @@ BOOL "true"|"false"
 %x STRING 
 TYPE "int"|"float"|"bool"|"void"|"string" 
 
-STMT "if"|"while"|"else"|"return"|"for"|"print"|"scan"|"strUpper"|"strLower"
+STMT "if"|"while"|"else"|"return"|"for"|"print"|"scan"|"strUpper"|"strLower"|"strConcat"|"strCompare"|"strCopy"|"strInsert"
 OP "+"|"-"|"*"|"/"
 ASSIGN "="
 RELOP "<="|"=="|">="|">"|"<"|"!="
