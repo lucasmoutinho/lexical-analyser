@@ -519,6 +519,7 @@ char openParenthesis[] = "(";
 char closeParenthesis[] = ")";
 int line = 1;
 int error_pos = 0;
+int tableSize = 0;
 
 struct lexError {
     char symbol[100];
@@ -529,10 +530,18 @@ struct lexError {
 
 struct lexError errors[100];
 
-#line 533 "lex.yy.c"
+struct symbolItem {
+    char symbol[100];
+};
+
+struct symbolItem symbolTable[500];
+
+int insertTable();
+
+#line 542 "lex.yy.c"
  
 /*arrumar na gramatica*/
-#line 536 "lex.yy.c"
+#line 545 "lex.yy.c"
 
 #define INITIAL 0
 #define STRING 1
@@ -751,10 +760,10 @@ YY_DECL
 		}
 
 	{
-#line 52 "lexical.l"
+#line 61 "lexical.l"
 
 
-#line 758 "lex.yy.c"
+#line 767 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -814,47 +823,47 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 54 "lexical.l"
+#line 63 "lexical.l"
 {
     line++;
 }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 58 "lexical.l"
+#line 67 "lexical.l"
 {
     printf("SEP\t\t(%s) LENGTH %d\n", yytext, yyleng); 
 }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 62 "lexical.l"
+#line 71 "lexical.l"
 { }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 64 "lexical.l"
+#line 73 "lexical.l"
 {
     printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng); 
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 68 "lexical.l"
+#line 77 "lexical.l"
 {
     printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng); 
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 72 "lexical.l"
+#line 81 "lexical.l"
 {
     printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng); 
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 76 "lexical.l"
+#line 85 "lexical.l"
 {
     printf("STRING\t\t%s%s", openParenthesis, yytext);
     stringLen += 1;
@@ -863,7 +872,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 82 "lexical.l"
+#line 91 "lexical.l"
 {
     stringLen += 1;
     printf("%s%s LENGTH %d\n", yytext, closeParenthesis, stringLen);
@@ -874,7 +883,7 @@ YY_RULE_SETUP
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 89 "lexical.l"
+#line 98 "lexical.l"
 {
     printf("%s", yytext);
     stringLen += 1;
@@ -883,7 +892,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 95 "lexical.l"
+#line 104 "lexical.l"
 {
     printf("%s", yytext);
     stringLen += 1;
@@ -891,56 +900,57 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 100 "lexical.l"
+#line 109 "lexical.l"
 {
     printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 104 "lexical.l"
+#line 113 "lexical.l"
 {
     printf("STMT\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 108 "lexical.l"
+#line 117 "lexical.l"
 {
     printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 112 "lexical.l"
+#line 121 "lexical.l"
 {
     printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 116 "lexical.l"
+#line 125 "lexical.l"
 {
     printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 120 "lexical.l"
+#line 129 "lexical.l"
 {
     printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 124 "lexical.l"
+#line 133 "lexical.l"
 {
-    printf("ID\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+    int address = insertTable(yytext);
+    printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 128 "lexical.l"
+#line 138 "lexical.l"
 {
     struct lexError error; 
     strcpy(error.symbol, yytext);
@@ -953,14 +963,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 138 "lexical.l"
+#line 148 "lexical.l"
 {
     BEGIN(COMMENT);
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 142 "lexical.l"
+#line 152 "lexical.l"
 {
     BEGIN(INITIAL);
 }
@@ -968,17 +978,17 @@ YY_RULE_SETUP
 case 21:
 /* rule 21 can match eol */
 YY_RULE_SETUP
-#line 146 "lexical.l"
+#line 156 "lexical.l"
 {line++;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 148 "lexical.l"
+#line 158 "lexical.l"
 { }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 150 "lexical.l"
+#line 160 "lexical.l"
 { 
     struct lexError error; 
     strcpy(error.symbol, yytext);
@@ -991,10 +1001,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 160 "lexical.l"
+#line 170 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 998 "lex.yy.c"
+#line 1008 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING):
 case YY_STATE_EOF(COMMENT):
@@ -2001,15 +2011,48 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 160 "lexical.l"
+#line 170 "lexical.l"
 
 
-void showError(struct lexError error, int current_error){
-    printf("------ERROR %d--------\n", current_error + 1);
-    printf("Simbolo: %s\n", error.symbol);
-    printf("%s\n", error.message);
-    printf("Line: %d\n", error.line);
+int insertTable(char symbol[100]){
+    int i = 0;
+    int address = -1;
+    while(i < tableSize && address == -1){
+        if(strcmp(symbolTable[i].symbol, symbol) == 0){
+            address = i;
+        }
+        i++;
+    }
+    if(address == -1){
+        strcpy(symbolTable[tableSize].symbol, symbol);
+        address = tableSize;
+        tableSize++;
+    }
+    return address;
+}
+
+void showSymbolTable(){
+    int address = 0;
+    printf("\n\n------SYMBOL TABLE--------\n");
+    while(address < tableSize){
+        printf("%d -- Simbolo: %s\n", address, symbolTable[address].symbol);
+        address++;
+    }
+    printf("----------------------\n\n\n");
+}
+
+void showError(){
     printf("----------------------\n");
+    printf("Number of errors: %d\n\n", error_pos);
+    int current_error = 0;
+    while(current_error < error_pos){
+        printf("------ERROR %d--------\n", current_error + 1);
+        printf("Simbolo: %s\n", errors[current_error].symbol);
+        printf("%s\n", errors[current_error].message);
+        printf("Line: %d\n", errors[current_error].line);
+        printf("----------------------\n");
+        current_error++;
+    }
 }
 
 int main( int argc, char **argv ) {
@@ -2019,15 +2062,9 @@ int main( int argc, char **argv ) {
     else
         yyin = stdin;
     yylex();
-
+    showSymbolTable();
     if(error_pos > 0){
-        printf("----------------\n");
-        printf("Number of errors: %d\n\n", error_pos);
-        int current_error = 0;
-        while(current_error < error_pos){
-            showError(errors[current_error], current_error);
-            current_error++;
-        }
+        showError();
     }
 }
 

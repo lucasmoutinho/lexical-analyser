@@ -5,11 +5,11 @@ float outputInteger;
 
 text = "The path of the righteous man";
 upper_text = "THE PATH OF THE RIGHTEOUS MAN";
-write("Enter an integer: ");
-read(3inputInteger);
+print("Enter an integer: ");
+scan(3inputInteger);
 outputInteger = inputInteger * 2.0;
 
 if(strUpper(text) == upper_text){
-    write("Comparison Success, your number doubled is: ");
-    write(outputInteger);
+    print("Comparison Success, your number doubled is: ");
+    print(outputInteger);
 }
