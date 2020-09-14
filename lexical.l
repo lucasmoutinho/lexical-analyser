@@ -53,8 +53,6 @@ LOG "and"|"or"|"not"
 
 ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 
-SYMBOL_ERROR {DIGIT}+({LETTER}|{UNDERSCORE})+
-
 %x COMMENT
 /*arrumar na gramatica*/
 
@@ -133,16 +131,6 @@ SYMBOL_ERROR {DIGIT}+({LETTER}|{UNDERSCORE})+
 {ID} {
     int address = insertTable(yytext);
     printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
-}
-
-{SYMBOL_ERROR} {
-    struct lexError error; 
-    strcpy(error.symbol, yytext);
-    strcpy(error.type, "NO_SIMBOL");
-    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
-    error.line = line;
-    errors[error_pos] = error;
-    error_pos++;
 }
 
 "/*" {
