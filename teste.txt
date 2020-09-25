@@ -1,3 +1,0 @@
-text = "ola";
-strUpper(@text);
-print(text);
