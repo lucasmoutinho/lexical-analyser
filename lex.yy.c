@@ -322,6 +322,9 @@ void yyfree ( void *  );
 #define YY_AT_BOL() (YY_CURRENT_BUFFER_LVALUE->yy_at_bol)
 
 /* Begin user sect3 */
+
+#define yywrap() (/*CONSTCOND*/1)
+#define YY_SKIP_YYWRAP
 typedef flex_uint8_t YY_CHAR;
 
 FILE *yyin = NULL, *yyout = NULL;
@@ -548,10 +551,9 @@ struct symbolItem symbolTable[500];
 
 int insertTable();
 
-#line 552 "lex.yy.c"
- 
-/*arrumar na gramatica*/
 #line 555 "lex.yy.c"
+ 
+#line 557 "lex.yy.c"
 
 #define INITIAL 0
 #define STRING 1
@@ -773,7 +775,7 @@ YY_DECL
 #line 59 "lexical.l"
 
 
-#line 777 "lex.yy.c"
+#line 779 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1001,7 +1003,7 @@ YY_RULE_SETUP
 #line 158 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 1005 "lex.yy.c"
+#line 1007 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING):
 case YY_STATE_EOF(COMMENT):
@@ -2059,6 +2061,7 @@ int main( int argc, char **argv ) {
     else
         yyin = stdin;
     yylex();
+    yylex_destroy();
     showSymbolTable();
     if(error_pos > 0){
         showError();

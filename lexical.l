@@ -29,6 +29,7 @@ struct symbolItem symbolTable[500];
 int insertTable();
 
 %}
+%option noyywrap
 
 EOL \n
 SEP [{}();]
@@ -54,7 +55,6 @@ LOG "and"|"or"|"not"
 ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 
 %x COMMENT
-/*arrumar na gramatica*/
 
 %%
 
@@ -205,6 +205,7 @@ int main( int argc, char **argv ) {
     else
         yyin = stdin;
     yylex();
+    yylex_destroy();
     showSymbolTable();
     if(error_pos > 0){
         showError();
