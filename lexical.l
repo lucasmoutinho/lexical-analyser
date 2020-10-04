@@ -107,16 +107,10 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
     return TYPE;
 }
 
-{STMT} {
-    printf("STMT\t\t(%s) LENGTH %d\n", yytext, yyleng);
-    return STMT;
-}
-
 "if" { return IF; }
-"while" { return WHILE; }
 "else" { return ELSE; }
-"return" { return RETURN; }
 "while" { return WHILE; }
+"return" { return RETURN; }
 "print" { return PRINT; }
 "scan" { return SCAN; }
 "strUpper" { return STRUPPER; }
