@@ -1043,22 +1043,16 @@ YY_RULE_SETUP
 case 32:
 YY_RULE_SETUP
 #line 161 "lexical.l"
-{ 
-    struct lexError error; 
-    strcpy(error.symbol, yytext);
-    strcpy(error.type, "NO_SIMBOL");
-    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
-    error.line = line;
-    errors[error_pos] = error;
-    error_pos++;
+{
+    return yytext[0];
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 171 "lexical.l"
+#line 165 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 1062 "lex.yy.c"
+#line 1056 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING):
 case YY_STATE_EOF(COMMENT):
@@ -2065,7 +2059,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 171 "lexical.l"
+#line 165 "lexical.l"
 
 
 int insertTable(char symbol[100]){

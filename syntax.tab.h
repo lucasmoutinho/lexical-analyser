@@ -77,7 +77,7 @@ union YYSTYPE
 {
 #line 18 "syntax.y" /* yacc.c:1909  */
 
-  char *qc;
+    int qc;
 
 #line 83 "syntax.tab.h" /* yacc.c:1909  */
 };

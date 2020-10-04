@@ -1,1 +1,5 @@
-string text;
+int i;
+
+int sum(int a, int b){
+    return a + b;
+}

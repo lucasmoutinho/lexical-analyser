@@ -158,14 +158,8 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 
 <COMMENT>. { }
 
-. { 
-    struct lexError error; 
-    strcpy(error.symbol, yytext);
-    strcpy(error.type, "NO_SIMBOL");
-    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
-    error.line = line;
-    errors[error_pos] = error;
-    error_pos++;
+. {
+    return yytext[0];
 }
 
 %%

@@ -16,7 +16,7 @@ extern FILE *yyin;
 %}
 
 %union {
-  char *qc;
+    int qc;
 }
 
 %token <qc> INT FLOAT BOOL STRING
@@ -31,54 +31,52 @@ extern FILE *yyin;
 %type <qc> expr simple-expr conditional-stmt iteration-stmt return-stmt
 %type <qc> var op-expr op-log term call args arg-list
 
-
-%start prog
 %%
 
 prog: 
-    decl-list {printf("%s", $1);}
+    decl-list {printf("prog\n");}
 ;
 
 decl-list: 
-    decl-list var-decl {printf("%s %s", $1, $2);}
-    | var-decl {printf("%s", $1);}
-    | decl-list func {printf("%s %s", $1, $2);}
-    | func {printf("%s", $1);}
+    decl-list var-decl {printf("multiple-var\n");}
+    | var-decl {printf("var\n");}
+    | decl-list func {printf("multiple-func\n");}
+    | func {printf("func\n");}
 ;
 
 var-decl:
-    TYPE ID ';'
+    TYPE ID ';' {printf("var-decl\n");}
 ;
 
 func:
-    TYPE ID '(' params ')' comp-stmt {printf("%s %s", $4, $6);}
+    TYPE ID '(' params ')' comp-stmt {printf("func-decl\n");}
 ;
 
 params:
-    params ',' TYPE ID {printf("%s", $1);}
+    params ',' TYPE ID {printf("%d", $1);}
     | TYPE ID
     | {}
 ;
 
 comp-stmt:
-    '{' local-decl stmt-list '}' {printf("%s %s", $2, $3);}
+    '{' local-decl stmt-list '}' {printf("%d %d", $2, $3);}
 ;
 
 local-decl:
-    local-decl TYPE ID ';' {printf("%s", $1);}
+    local-decl TYPE ID ';' {printf("%d", $1);}
     | {}
 ;
 
 stmt-list:
-    stmt-list stmt {printf("%s %s", $1, $2);}
+    stmt-list stmt {printf("%d %d", $1, $2);}
     | {}
 ;
 
 stmt: 
-    expr {printf("%s", $1);}
-    | conditional-stmt {printf("%s", $1);}
-    | iteration-stmt {printf("%s", $1);}
-    | return-stmt {printf("%s", $1);}
+    expr {printf("%d", $1);}
+    | conditional-stmt {printf("%d", $1);}
+    | iteration-stmt {printf("%d", $1);}
+    | return-stmt {printf("%d", $1);}
     | PRINT '(' STRING ')'
     | PRINT '(' ID ')'
     | SCAN '(' ID ')'
@@ -91,27 +89,27 @@ stmt:
 ;
 
 expr:
-    var ASSIGN expr {printf("%s %s", $1, $3);}
-    | simple-expr {printf("%s", $1);}
+    var ASSIGN expr {printf("%d %d", $1, $3);}
+    | simple-expr {printf("%d", $1);}
 ;
 
 simple-expr:
-    op-expr RELOP op-expr {printf("%s %s", $1, $3);}
-    | op-expr {printf("%s", $1);}
-    | op-log {printf("%s", $1);}
+    op-expr RELOP op-expr {printf("%d %d", $1, $3);}
+    | op-expr {printf("%d", $1);}
+    | op-log {printf("%d", $1);}
 ;
 
 conditional-stmt:
-    IF '(' expr ')' comp-stmt {printf("%s %s", $3, $5);}
-    | IF '(' expr ')' comp-stmt ELSE comp-stmt {printf("%s %s %s", $3, $5, $7);}
+    IF '(' expr ')' comp-stmt {printf("%d %d", $3, $5);}
+    | IF '(' expr ')' comp-stmt ELSE comp-stmt {printf("%d %d %d", $3, $5, $7);}
 ;
 
 iteration-stmt:
-    WHILE '(' expr ')' comp-stmt {printf("%s %s", $3, $5);}
+    WHILE '(' expr ')' comp-stmt {printf("%d %d", $3, $5);}
 ;
 
 return-stmt:
-    RETURN expr ';' {printf("%s", $2);}
+    RETURN expr ';' {printf("%d", $2);}
     | RETURN ';'
 ;
 
@@ -120,36 +118,36 @@ var:
 ;
 
 op-expr:
-    op-expr OP term {printf("%s %s", $1, $3);}
-    | term {printf("%s", $1);}
+    op-expr OP term {printf("%d %d", $1, $3);}
+    | term {printf("%d", $1);}
 ;
 
 op-log:
-    op-log LOG term {printf("%s %s", $1, $3);}
+    op-log LOG term {printf("%d %d", $1, $3);}
     | BOOL
 ;
 
 term:
-    '(' simple-expr ')' {printf("%s", $2);}
-    | var {printf("%s", $1);}
-    | call {printf("%s", $1);}
+    '(' simple-expr ')' {printf("%d", $2);}
+    | var {printf("%d", $1);}
+    | call {printf("%d", $1);}
     | STRING
     | INT
     | FLOAT
 ;
 
 call:
-    ID '(' args ')' {printf("%s", $3);}
+    ID '(' args ')' {printf("%d", $3);}
 ;
 
 args:
-    arg-list {printf("%s", $1);}
+    arg-list {printf("%d", $1);}
     | {}
 ;
 
 arg-list:
-    arg-list ',' simple-expr {printf("%s %s", $1, $3);}
-    | simple-expr {printf("%s", $1);}
+    arg-list ',' simple-expr {printf("%d %d", $1, $3);}
+    | simple-expr {printf("%d", $1);}
 ;
 
 %%
@@ -160,7 +158,6 @@ int main(int argc, char **argv) {
         yyin = fopen( argv[0], "r" );
     else
         yyin = stdin;
-    yylex();
     yyparse();
     yylex_destroy();
     return 0;
