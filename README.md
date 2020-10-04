@@ -1,4 +1,4 @@
-# Analisador Léxico
+# Analisador Sintático
 
 - Aluno: Lucas da Silva Moutinho (150015747)
 
@@ -6,13 +6,13 @@
 
 - Flex 2.6.4
 - GCC 7.5.0
+- Bison 3.0.4
 
 ## Compilando e Executando
 
 ```bash
-lex lexical.l
-gcc lex.yy.c
-./a.out testes/arquivo_teste
+make
+./program.out testes/arquivo_teste
 ```
 
 ## Exemplos de teste

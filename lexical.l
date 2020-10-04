@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "syntax.tab.h"
 
 int stringLen = 0;
 char openParenthesis[] = "(";
@@ -32,7 +33,6 @@ int insertTable();
 %option noyywrap
 
 EOL \n
-SEP [{}();]
 DELIM [ \t]
 WHITESPACE {DELIM}+
 
@@ -46,7 +46,6 @@ BOOL "true"|"false"
 %x STRING 
 TYPE "int"|"float"|"bool"|"void"|"string" 
 
-STMT "if"|"while"|"else"|"return"|"for"|"print"|"scan"|"strUpper"|"strLower"|"strConcat"|"strCompare"|"strCopy"|"strInsert"
 OP "+"|"-"|"*"|"/"
 ASSIGN "="
 RELOP "<="|"=="|">="|">"|"<"|"!="
@@ -62,22 +61,21 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
     line++;
 }
 
-{SEP} {
-    printf("SEP\t\t(%s) LENGTH %d\n", yytext, yyleng); 
-}
-
 {WHITESPACE} { }
 
 {INT} {
-    printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+    printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return INT; 
 }
 
 {FLOAT} {
-    printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+    printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return FLOAT; 
 }
 
 {BOOL} {
-    printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+    printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return BOOL; 
 }
 
 \" {
@@ -106,31 +104,52 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 
 {TYPE} {
     printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return TYPE;
 }
 
 {STMT} {
     printf("STMT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return STMT;
 }
+
+"if" { return IF; }
+"while" { return WHILE; }
+"else" { return ELSE; }
+"return" { return RETURN; }
+"while" { return WHILE; }
+"print" { return PRINT; }
+"scan" { return SCAN; }
+"strUpper" { return STRUPPER; }
+"strLower" { return STRLOWER; }
+"strConcat" { return STRCONCAT; }
+"strCompare" { return STRCOMPARE; }
+"strCopy" { return STRCOPY; }
+"strInsert" { return STRINSERT; }
 
 {OP} {
     printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return OP;
 }
 
 {ASSIGN} {
     printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return ASSIGN;
 }
 
 {RELOP} {
     printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return RELOP;
 }
 
 {LOG} {
     printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    return LOG;
 }
 
 {ID} {
     int address = insertTable(yytext);
     printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
+    return ID;
 }
 
 "/*" {
@@ -195,19 +214,5 @@ void showError(){
         printf("Line: %d\n", errors[current_error].line);
         printf("----------------------\n");
         current_error++;
-    }
-}
-
-int main( int argc, char **argv ) {
-    ++argv, --argc;
-    if(argc > 0)
-        yyin = fopen( argv[0], "r" );
-    else
-        yyin = stdin;
-    yylex();
-    yylex_destroy();
-    showSymbolTable();
-    if(error_pos > 0){
-        showError();
     }
 }
