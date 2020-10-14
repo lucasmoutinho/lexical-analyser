@@ -48,7 +48,7 @@ extern int yydebug;
     INT = 258,
     FLOAT = 259,
     BOOL = 260,
-    STRING = 261,
+    STR = 261,
     TYPE = 262,
     IF = 263,
     ELSE = 264,
@@ -62,11 +62,12 @@ extern int yydebug;
     STRCOMPARE = 272,
     STRCOPY = 273,
     STRINSERT = 274,
-    ASSIGN = 275,
-    OP = 276,
-    RELOP = 277,
-    LOG = 278,
-    ID = 279
+    ID = 275,
+    QUOTES = 276,
+    ASSIGN = 277,
+    OP = 278,
+    RELOP = 279,
+    LOG = 280
   };
 #endif
 
@@ -75,11 +76,11 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 18 "syntax.y" /* yacc.c:1909  */
+#line 19 "syntax.y" /* yacc.c:1909  */
 
     int qc;
 
-#line 83 "syntax.tab.h" /* yacc.c:1909  */
+#line 84 "syntax.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

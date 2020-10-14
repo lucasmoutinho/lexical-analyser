@@ -29,6 +29,7 @@ struct symbolItem symbolTable[500];
 
 int insertTable();
 
+int inside_string = 0;
 %}
 %option noyywrap
 
@@ -43,7 +44,8 @@ DIGIT [0-9]
 INT "-"?{DIGIT}+
 FLOAT "-"?{DIGIT}+"."({DIGIT}*)?
 BOOL "true"|"false"
-%x STRING 
+%s STRING
+STR [^"]*
 TYPE "int"|"float"|"bool"|"void"|"string" 
 
 OP "+"|"-"|"*"|"/"
@@ -52,6 +54,8 @@ RELOP "<="|"=="|">="|">"|"<"|"!="
 LOG "and"|"or"|"not"
 
 ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
+
+QUOTES \"
 
 %x COMMENT
 
@@ -78,47 +82,35 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
     return BOOL; 
 }
 
-\" {
-    printf("STRING\t\t%s%s", openParenthesis, yytext);
-    stringLen += 1;
-    BEGIN(STRING);
+
+<INITIAL,STRING>{QUOTES} {
+    if(inside_string) { BEGIN(0); inside_string--; printf("%s%s\n", yytext, closeParenthesis); return QUOTES;}
+    else              { BEGIN(STRING); inside_string++; printf("STRING\t\t%s%s", openParenthesis, yytext); return QUOTES;}
 }
 
-<STRING>\" {
-    stringLen += 1;
-    printf("%s%s LENGTH %d\n", yytext, closeParenthesis, stringLen);
-    stringLen = 0;
-    BEGIN(INITIAL);
+
+<STRING>{STR} { if(yytext == "\n"){line++;} 
+                printf("%s", yytext); return STR; 
 }
 
-<STRING>\n {
-    printf("%s", yytext);
-    stringLen += 1;
-    line++;
-}
-
-<STRING>. {
-    printf("%s", yytext);
-    stringLen += 1;
-}
 
 {TYPE} {
     printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return TYPE;
 }
 
-"if" { return IF; }
-"else" { return ELSE; }
-"while" { return WHILE; }
-"return" { return RETURN; }
-"print" { return PRINT; }
-"scan" { return SCAN; }
-"strUpper" { return STRUPPER; }
-"strLower" { return STRLOWER; }
-"strConcat" { return STRCONCAT; }
-"strCompare" { return STRCOMPARE; }
-"strCopy" { return STRCOPY; }
-"strInsert" { return STRINSERT; }
+"if" { printf("IF\n"); return IF; }
+"else" { printf("ELSE\n"); return ELSE; }
+"while" { printf("WHILE\n"); return WHILE; }
+"return" { printf("RETURN\n"); return RETURN; }
+"print" { printf("PRINT\n"); return PRINT; }
+"scan" { printf("SCAN\n"); return SCAN; }
+"strUpper" { printf("STRUPPER\n"); return STRUPPER; }
+"strLower" { printf("STRLOWER\n"); return STRLOWER; }
+"strConcat" { printf("STRCONCAT\n"); return STRCONCAT; }
+"strCompare" { printf("CTRCOMPARE\n"); return STRCOMPARE; }
+"strCopy" { printf("STRCOPY\n"); return STRCOPY; }
+"strInsert" { printf("STRINSERT\n"); return STRINSERT; }
 
 {OP} {
     printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);

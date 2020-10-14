@@ -8,8 +8,9 @@
 
 int yylex();
 extern int yylex_destroy(void);
+extern int line;
 void yyerror(const char* msg) {
-    fprintf(stderr, "%s\n", msg);
+    fprintf(stderr, "%s -- linha: %d\n", msg, line);
 }
 extern FILE *yyin;
 
@@ -19,17 +20,20 @@ extern FILE *yyin;
     int qc;
 }
 
-%token <qc> INT FLOAT BOOL STRING
+%token <qc> INT FLOAT BOOL STR
 %token <qc> TYPE
 %token <qc> IF ELSE WHILE RETURN PRINT SCAN 
 %token <qc> STRUPPER STRLOWER STRCONCAT STRCOMPARE STRCOPY STRINSERT
-%token <qc> ASSIGN OP RELOP LOG
 %token <qc> ID
+%token <qc> QUOTES
+
+%right ASSIGN
+%left OP RELOP LOG
 
 %type <qc> prog decl-list var-decl func params
 %type <qc> stmt-list comp-stmt stmt local-decl
 %type <qc> expr simple-expr conditional-stmt iteration-stmt return-stmt
-%type <qc> var op-expr op-log term call args arg-list
+%type <qc> var op-expr op-log term call args arg-list string
 
 %%
 
@@ -77,20 +81,14 @@ stmt:
     | conditional-stmt {printf("%d", $1);}
     | iteration-stmt {printf("%d", $1);}
     | return-stmt {printf("%d", $1);}
-    | PRINT '(' STRING ')'
-    | PRINT '(' ID ')'
-    | SCAN '(' ID ')'
-    | STRCONCAT '(' STRING ',' STRING ')'
-    | STRCOMPARE '(' STRING ',' STRING ')'
-    | STRCOPY '(' STRING ',' STRING ')'
-    | STRINSERT '(' STRING ',' STRING ',' ID ')'
-    | STRUPPER '(' STRING ')'
-    | STRLOWER '(' STRING ')'
+    | PRINT '(' QUOTES string QUOTES ')' ';'
+    | PRINT '(' ID ')' ';'
+    | SCAN '(' ID ')' ';'
 ;
 
 expr:
     var ASSIGN expr {printf("%d %d", $1, $3);}
-    | simple-expr {printf("%d", $1);}
+    | simple-expr ';' {printf("%d", $1);}
 ;
 
 simple-expr:
@@ -100,8 +98,8 @@ simple-expr:
 ;
 
 conditional-stmt:
-    IF '(' expr ')' comp-stmt {printf("%d %d", $3, $5);}
-    | IF '(' expr ')' comp-stmt ELSE comp-stmt {printf("%d %d %d", $3, $5, $7);}
+    IF '(' simple-expr ')' comp-stmt {printf("%d %d", $3, $5);}
+    | IF '(' simple-expr ')' comp-stmt ELSE comp-stmt {printf("%d %d %d", $3, $5, $7);}
 ;
 
 iteration-stmt:
@@ -131,13 +129,21 @@ term:
     '(' simple-expr ')' {printf("%d", $2);}
     | var {printf("%d", $1);}
     | call {printf("%d", $1);}
-    | STRING
+    | QUOTES string QUOTES {printf("strig term\n");}
     | INT
     | FLOAT
 ;
 
 call:
     ID '(' args ')' {printf("%d", $3);}
+    | STRCONCAT '(' QUOTES string QUOTES ',' QUOTES string QUOTES ')'
+    | STRCOMPARE '(' QUOTES string QUOTES ',' QUOTES string QUOTES ')'
+    | STRCOPY '(' QUOTES string QUOTES ',' QUOTES string QUOTES ')'
+    | STRINSERT '(' QUOTES string QUOTES ',' QUOTES string QUOTES ',' ID ')'
+    | STRUPPER '(' QUOTES string QUOTES ')'
+    | STRUPPER '(' ID ')'
+    | STRLOWER '(' QUOTES string QUOTES ')'
+    | STRLOWER '(' ID ')'
 ;
 
 args:
@@ -150,6 +156,9 @@ arg-list:
     | simple-expr {printf("%d", $1);}
 ;
 
+string: 
+    string STR {}
+    | {}
 %%
 
 int main(int argc, char **argv) {

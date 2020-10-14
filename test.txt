@@ -1,1 +1,13 @@
-moutinho
+int main(){
+    string moutinho;
+    int nicholas;
+    moutinho = "suamae";
+    nicholas = 5;
+    nicholas = nicholas + 1;
+    print("nicholas");
+
+    if(nicholas == "nicholas"){
+        nicholas = strUpper(nicholas);
+        print(nicholas);
+    }
+}
