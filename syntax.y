@@ -76,6 +76,7 @@ stmt-list:
     | {}
 ;
 
+// Arrumar na gramatica
 stmt: 
     expr {printf("%d", $1);}
     | conditional-stmt {printf("%d", $1);}
@@ -86,6 +87,7 @@ stmt:
     | SCAN '(' ID ')' ';'
 ;
 
+// Arrumar na gramatica
 expr:
     var ASSIGN expr {printf("%d %d", $1, $3);}
     | simple-expr ';' {printf("%d", $1);}
@@ -134,6 +136,7 @@ term:
     | FLOAT
 ;
 
+// Arrumar na gramatica
 call:
     ID '(' args ')' {printf("%d", $3);}
     | STRCONCAT '(' QUOTES string QUOTES ',' QUOTES string QUOTES ')'

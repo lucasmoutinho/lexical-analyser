@@ -480,11 +480,11 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    41,    41,    45,    46,    47,    48,    52,    56,    60,
-      61,    62,    66,    70,    71,    75,    76,    80,    81,    82,
-      83,    84,    85,    86,    90,    91,    95,    96,    97,   101,
-     102,   106,   110,   111,   115,   119,   120,   124,   125,   129,
-     130,   131,   132,   133,   134,   138,   139,   140,   141,   142,
-     143,   144,   145,   146,   150,   151,   155,   156,   160,   161
+      61,    62,    66,    70,    71,    75,    76,    81,    82,    83,
+      84,    85,    86,    87,    92,    93,    97,    98,    99,   103,
+     104,   108,   112,   113,   117,   121,   122,   126,   127,   131,
+     132,   133,   134,   135,   136,   141,   142,   143,   144,   145,
+     146,   147,   148,   149,   153,   154,   158,   159,   163,   164
 };
 #endif
 
@@ -1531,163 +1531,163 @@ yyreduce:
     break;
 
   case 17:
-#line 80 "syntax.y" /* yacc.c:1646  */
+#line 81 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1537 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 81 "syntax.y" /* yacc.c:1646  */
+#line 82 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1543 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 82 "syntax.y" /* yacc.c:1646  */
+#line 83 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1549 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 83 "syntax.y" /* yacc.c:1646  */
+#line 84 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1555 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 90 "syntax.y" /* yacc.c:1646  */
+#line 92 "syntax.y" /* yacc.c:1646  */
     {printf("%d %d", (yyvsp[-2].qc), (yyvsp[0].qc));}
 #line 1561 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 91 "syntax.y" /* yacc.c:1646  */
+#line 93 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[-1].qc));}
 #line 1567 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 95 "syntax.y" /* yacc.c:1646  */
+#line 97 "syntax.y" /* yacc.c:1646  */
     {printf("%d %d", (yyvsp[-2].qc), (yyvsp[0].qc));}
 #line 1573 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 96 "syntax.y" /* yacc.c:1646  */
+#line 98 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1579 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 97 "syntax.y" /* yacc.c:1646  */
+#line 99 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1585 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 101 "syntax.y" /* yacc.c:1646  */
+#line 103 "syntax.y" /* yacc.c:1646  */
     {printf("%d %d", (yyvsp[-2].qc), (yyvsp[0].qc));}
 #line 1591 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 102 "syntax.y" /* yacc.c:1646  */
+#line 104 "syntax.y" /* yacc.c:1646  */
     {printf("%d %d %d", (yyvsp[-4].qc), (yyvsp[-2].qc), (yyvsp[0].qc));}
 #line 1597 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 106 "syntax.y" /* yacc.c:1646  */
+#line 108 "syntax.y" /* yacc.c:1646  */
     {printf("%d %d", (yyvsp[-2].qc), (yyvsp[0].qc));}
 #line 1603 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 110 "syntax.y" /* yacc.c:1646  */
+#line 112 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[-1].qc));}
 #line 1609 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 119 "syntax.y" /* yacc.c:1646  */
+#line 121 "syntax.y" /* yacc.c:1646  */
     {printf("%d %d", (yyvsp[-2].qc), (yyvsp[0].qc));}
 #line 1615 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 120 "syntax.y" /* yacc.c:1646  */
+#line 122 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1621 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 124 "syntax.y" /* yacc.c:1646  */
+#line 126 "syntax.y" /* yacc.c:1646  */
     {printf("%d %d", (yyvsp[-2].qc), (yyvsp[0].qc));}
 #line 1627 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 129 "syntax.y" /* yacc.c:1646  */
+#line 131 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[-1].qc));}
 #line 1633 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 130 "syntax.y" /* yacc.c:1646  */
+#line 132 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1639 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 131 "syntax.y" /* yacc.c:1646  */
+#line 133 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1645 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 132 "syntax.y" /* yacc.c:1646  */
+#line 134 "syntax.y" /* yacc.c:1646  */
     {printf("strig term\n");}
 #line 1651 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 138 "syntax.y" /* yacc.c:1646  */
+#line 141 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[-1].qc));}
 #line 1657 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 150 "syntax.y" /* yacc.c:1646  */
+#line 153 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1663 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 151 "syntax.y" /* yacc.c:1646  */
+#line 154 "syntax.y" /* yacc.c:1646  */
     {}
 #line 1669 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 155 "syntax.y" /* yacc.c:1646  */
+#line 158 "syntax.y" /* yacc.c:1646  */
     {printf("%d %d", (yyvsp[-2].qc), (yyvsp[0].qc));}
 #line 1675 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
-#line 156 "syntax.y" /* yacc.c:1646  */
+#line 159 "syntax.y" /* yacc.c:1646  */
     {printf("%d", (yyvsp[0].qc));}
 #line 1681 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
-#line 160 "syntax.y" /* yacc.c:1646  */
+#line 163 "syntax.y" /* yacc.c:1646  */
     {}
 #line 1687 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
-#line 161 "syntax.y" /* yacc.c:1646  */
+#line 164 "syntax.y" /* yacc.c:1646  */
     {}
 #line 1693 "syntax.tab.c" /* yacc.c:1646  */
     break;
@@ -1928,7 +1928,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 162 "syntax.y" /* yacc.c:1906  */
+#line 165 "syntax.y" /* yacc.c:1906  */
 
 
 int main(int argc, char **argv) {
