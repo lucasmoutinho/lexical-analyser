@@ -68,73 +68,127 @@ QUOTES \"
 {WHITESPACE} { }
 
 {INT} {
-    printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return INT; 
 }
 
 {FLOAT} {
-    printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return FLOAT; 
 }
 
 {BOOL} {
-    printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return BOOL; 
 }
 
 
 <INITIAL,STRING>{QUOTES} {
-    if(inside_string) { BEGIN(0); inside_string--; printf("%s%s\n", yytext, closeParenthesis); return QUOTES;}
-    else              { BEGIN(STRING); inside_string++; printf("STRING\t\t%s%s", openParenthesis, yytext); return QUOTES;}
+    if(inside_string) { 
+        BEGIN(0);
+        inside_string--;
+        // printf("%s%s\n", yytext, closeParenthesis);
+        return QUOTES;
+    }
+    else { 
+        BEGIN(STRING);
+        inside_string++;
+        // printf("STRING\t\t%s%s", openParenthesis, yytext);
+        return QUOTES;
+    }
 }
 
 
-<STRING>{STR} { if(yytext == "\n"){line++;} 
-                printf("%s", yytext); return STR; 
+<STRING>{STR} { 
+    if(yytext == "\n"){line++;} 
+    // printf("%s", yytext);
+    yylval.str = (char *) strdup(yytext);
+    return STR; 
 }
 
 
 {TYPE} {
-    printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return TYPE;
 }
 
-"if" { printf("IF\n"); return IF; }
-"else" { printf("ELSE\n"); return ELSE; }
-"while" { printf("WHILE\n"); return WHILE; }
-"return" { printf("RETURN\n"); return RETURN; }
-"print" { printf("PRINT\n"); return PRINT; }
-"scan" { printf("SCAN\n"); return SCAN; }
-"strUpper" { printf("STRUPPER\n"); return STRUPPER; }
-"strLower" { printf("STRLOWER\n"); return STRLOWER; }
-"strConcat" { printf("STRCONCAT\n"); return STRCONCAT; }
-"strCompare" { printf("CTRCOMPARE\n"); return STRCOMPARE; }
-"strCopy" { printf("STRCOPY\n"); return STRCOPY; }
-"strInsert" { printf("STRINSERT\n"); return STRINSERT; }
+"if" {
+    // printf("IF\n");
+    return IF;
+}
+"else" {
+    // printf("ELSE\n");
+    return ELSE;
+}
+"while" {
+    // printf("WHILE\n");
+    return WHILE;
+}
+"return" {
+    // printf("RETURN\n");
+    return RETURN;
+}
+"print" {
+    // printf("PRINT\n");
+    return PRINT;
+}
+"scan" {
+    // printf("SCAN\n");
+    return SCAN;
+}
+"strUpper" {
+    // printf("STRUPPER\n");
+    return STRUPPER;
+}
+"strLower" {
+    // printf("STRLOWER\n");
+    return STRLOWER;
+}
+"strConcat" {
+    // printf("STRCONCAT\n");
+    return STRCONCAT;
+}
+"strCompare" {
+    // printf("CTRCOMPARE\n");
+    return STRCOMPARE;
+}
+"strCopy" {
+    // printf("STRCOPY\n");
+    return STRCOPY;
+}
+"strInsert" {
+    // printf("STRINSERT\n");
+    return STRINSERT;
+}
 
 {OP} {
-    printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return OP;
 }
 
 {ASSIGN} {
-    printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return ASSIGN;
 }
 
 {RELOP} {
-    printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return RELOP;
 }
 
 {LOG} {
-    printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return LOG;
 }
 
 {ID} {
     int address = insertTable(yytext);
-    printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
+    // printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
+    yylval.str = (char *) strdup(yytext);
     return ID;
 }
 
@@ -175,24 +229,24 @@ int insertTable(char symbol[100]){
 
 void showSymbolTable(){
     int address = 0;
-    printf("\n\n------SYMBOL TABLE--------\n");
+    // printf("\n\n------SYMBOL TABLE--------\n");
     while(address < tableSize){
-        printf("%d -- Simbolo: %s\n", address, symbolTable[address].symbol);
+        // printf("%d -- Simbolo: %s\n", address, symbolTable[address].symbol);
         address++;
     }
-    printf("----------------------\n\n\n");
+    // printf("----------------------\n\n\n");
 }
 
 void showError(){
-    printf("----------------------\n");
-    printf("Number of errors: %d\n\n", error_pos);
+    // printf("----------------------\n");
+    // printf("Number of errors: %d\n\n", error_pos);
     int current_error = 0;
     while(current_error < error_pos){
-        printf("------ERROR %d--------\n", current_error + 1);
-        printf("Simbolo: %s\n", errors[current_error].symbol);
-        printf("%s\n", errors[current_error].message);
-        printf("Line: %d\n", errors[current_error].line);
-        printf("----------------------\n");
+        // printf("------ERROR %d--------\n", current_error + 1);
+        // printf("Simbolo: %s\n", errors[current_error].symbol);
+        // printf("%s\n", errors[current_error].message);
+        // printf("Line: %d\n", errors[current_error].line);
+        // printf("----------------------\n");
         current_error++;
     }
 }

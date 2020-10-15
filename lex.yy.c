@@ -937,161 +937,215 @@ case 3:
 YY_RULE_SETUP
 #line 70 "lexical.l"
 {
-    printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return INT; 
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 75 "lexical.l"
+#line 76 "lexical.l"
 {
-    printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return FLOAT; 
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 80 "lexical.l"
+#line 82 "lexical.l"
 {
-    printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return BOOL; 
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 86 "lexical.l"
+#line 89 "lexical.l"
 {
-    if(inside_string) { BEGIN(0); inside_string--; printf("%s%s\n", yytext, closeParenthesis); return QUOTES;}
-    else              { BEGIN(STRING); inside_string++; printf("STRING\t\t%s%s", openParenthesis, yytext); return QUOTES;}
+    if(inside_string) { 
+        BEGIN(0);
+        inside_string--;
+        // printf("%s%s\n", yytext, closeParenthesis);
+        return QUOTES;
+    }
+    else { 
+        BEGIN(STRING);
+        inside_string++;
+        // printf("STRING\t\t%s%s", openParenthesis, yytext);
+        return QUOTES;
+    }
 }
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 92 "lexical.l"
-{ if(yytext == "\n"){line++;} 
-                printf("%s", yytext); return STR; 
+#line 105 "lexical.l"
+{ 
+    if(yytext == "\n"){line++;} 
+    // printf("%s", yytext);
+    yylval.str = (char *) strdup(yytext);
+    return STR; 
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 97 "lexical.l"
+#line 113 "lexical.l"
 {
-    printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return TYPE;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 102 "lexical.l"
-{ printf("IF\n"); return IF; }
+#line 119 "lexical.l"
+{
+    // printf("IF\n");
+    return IF;
+}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 103 "lexical.l"
-{ printf("ELSE\n"); return ELSE; }
+#line 123 "lexical.l"
+{
+    // printf("ELSE\n");
+    return ELSE;
+}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 104 "lexical.l"
-{ printf("WHILE\n"); return WHILE; }
+#line 127 "lexical.l"
+{
+    // printf("WHILE\n");
+    return WHILE;
+}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 105 "lexical.l"
-{ printf("RETURN\n"); return RETURN; }
+#line 131 "lexical.l"
+{
+    // printf("RETURN\n");
+    return RETURN;
+}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 106 "lexical.l"
-{ printf("PRINT\n"); return PRINT; }
+#line 135 "lexical.l"
+{
+    // printf("PRINT\n");
+    return PRINT;
+}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 107 "lexical.l"
-{ printf("SCAN\n"); return SCAN; }
+#line 139 "lexical.l"
+{
+    // printf("SCAN\n");
+    return SCAN;
+}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 108 "lexical.l"
-{ printf("STRUPPER\n"); return STRUPPER; }
+#line 143 "lexical.l"
+{
+    // printf("STRUPPER\n");
+    return STRUPPER;
+}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 109 "lexical.l"
-{ printf("STRLOWER\n"); return STRLOWER; }
+#line 147 "lexical.l"
+{
+    // printf("STRLOWER\n");
+    return STRLOWER;
+}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 110 "lexical.l"
-{ printf("STRCONCAT\n"); return STRCONCAT; }
+#line 151 "lexical.l"
+{
+    // printf("STRCONCAT\n");
+    return STRCONCAT;
+}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 111 "lexical.l"
-{ printf("CTRCOMPARE\n"); return STRCOMPARE; }
+#line 155 "lexical.l"
+{
+    // printf("CTRCOMPARE\n");
+    return STRCOMPARE;
+}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 112 "lexical.l"
-{ printf("STRCOPY\n"); return STRCOPY; }
+#line 159 "lexical.l"
+{
+    // printf("STRCOPY\n");
+    return STRCOPY;
+}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 113 "lexical.l"
-{ printf("STRINSERT\n"); return STRINSERT; }
+#line 163 "lexical.l"
+{
+    // printf("STRINSERT\n");
+    return STRINSERT;
+}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 115 "lexical.l"
+#line 168 "lexical.l"
 {
-    printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return OP;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 120 "lexical.l"
+#line 173 "lexical.l"
 {
-    printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return ASSIGN;
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 125 "lexical.l"
+#line 178 "lexical.l"
 {
-    printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return RELOP;
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 130 "lexical.l"
+#line 183 "lexical.l"
 {
-    printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
     return LOG;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 135 "lexical.l"
+#line 188 "lexical.l"
 {
     int address = insertTable(yytext);
-    printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
+    // printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
+    yylval.str = (char *) strdup(yytext);
     return ID;
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 141 "lexical.l"
+#line 195 "lexical.l"
 {
     BEGIN(COMMENT);
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 145 "lexical.l"
+#line 199 "lexical.l"
 {
     BEGIN(INITIAL);
 }
@@ -1099,27 +1153,27 @@ YY_RULE_SETUP
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
-#line 149 "lexical.l"
+#line 203 "lexical.l"
 {line++;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 151 "lexical.l"
+#line 205 "lexical.l"
 { }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 153 "lexical.l"
+#line 207 "lexical.l"
 {
     return yytext[0];
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 157 "lexical.l"
+#line 211 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 1123 "lex.yy.c"
+#line 1177 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING):
 case YY_STATE_EOF(COMMENT):
@@ -2126,7 +2180,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 157 "lexical.l"
+#line 211 "lexical.l"
 
 
 int insertTable(char symbol[100]){
@@ -2148,24 +2202,24 @@ int insertTable(char symbol[100]){
 
 void showSymbolTable(){
     int address = 0;
-    printf("\n\n------SYMBOL TABLE--------\n");
+    // printf("\n\n------SYMBOL TABLE--------\n");
     while(address < tableSize){
-        printf("%d -- Simbolo: %s\n", address, symbolTable[address].symbol);
+        // printf("%d -- Simbolo: %s\n", address, symbolTable[address].symbol);
         address++;
     }
-    printf("----------------------\n\n\n");
+    // printf("----------------------\n\n\n");
 }
 
 void showError(){
-    printf("----------------------\n");
-    printf("Number of errors: %d\n\n", error_pos);
+    // printf("----------------------\n");
+    // printf("Number of errors: %d\n\n", error_pos);
     int current_error = 0;
     while(current_error < error_pos){
-        printf("------ERROR %d--------\n", current_error + 1);
-        printf("Simbolo: %s\n", errors[current_error].symbol);
-        printf("%s\n", errors[current_error].message);
-        printf("Line: %d\n", errors[current_error].line);
-        printf("----------------------\n");
+        // printf("------ERROR %d--------\n", current_error + 1);
+        // printf("Simbolo: %s\n", errors[current_error].symbol);
+        // printf("%s\n", errors[current_error].message);
+        // printf("Line: %d\n", errors[current_error].line);
+        // printf("----------------------\n");
         current_error++;
     }
 }

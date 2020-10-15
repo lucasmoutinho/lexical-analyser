@@ -50,19 +50,19 @@ extern int yydebug;
     BOOL = 260,
     STR = 261,
     TYPE = 262,
-    IF = 263,
-    ELSE = 264,
-    WHILE = 265,
-    RETURN = 266,
-    PRINT = 267,
-    SCAN = 268,
-    STRUPPER = 269,
-    STRLOWER = 270,
-    STRCONCAT = 271,
-    STRCOMPARE = 272,
-    STRCOPY = 273,
-    STRINSERT = 274,
-    ID = 275,
+    ID = 263,
+    IF = 264,
+    ELSE = 265,
+    WHILE = 266,
+    RETURN = 267,
+    PRINT = 268,
+    SCAN = 269,
+    STRUPPER = 270,
+    STRLOWER = 271,
+    STRCONCAT = 272,
+    STRCOMPARE = 273,
+    STRCOPY = 274,
+    STRINSERT = 275,
     QUOTES = 276,
     ASSIGN = 277,
     OP = 278,
@@ -76,11 +76,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 19 "syntax.y" /* yacc.c:1909  */
+#line 57 "syntax.y" /* yacc.c:1909  */
 
-    int qc;
+    char* str;
+    struct node* no;
 
-#line 84 "syntax.tab.h" /* yacc.c:1909  */
+#line 85 "syntax.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
