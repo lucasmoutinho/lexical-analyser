@@ -39,6 +39,7 @@ extern int yylex_destroy(void);
 extern int line;
 extern int lex_error;
 void yyerror(const char* msg) {
+    system("clear");
     fprintf(stderr, "\n%s -- linha: %d\n", msg, line);
     syntax_error++;
 }
@@ -141,7 +142,6 @@ stmt-list:
     | { $$ = NULL; printf("stmt-list #2\n"); }
 ;
 
-// Arrumar na gramatica
 stmt: 
     expr { $$ = $1; printf("stmt #1\n"); }
     | conditional-stmt { $$ = $1; printf("stmt #2\n"); }
@@ -152,7 +152,6 @@ stmt:
     | SCAN '(' var ')' ';' { $$ = insert_node(SCAN_STATEMENT, $3, NULL, NULL, $1); printf("stmt #6 %s\n", $1); }
 ;
 
-// Arrumar na gramatica
 expr:
     var ASSIGN expr { $$ = insert_node(ASSIGN_EXPRESSION, $1, $3, NULL, $2); printf("expr #1 %s\n", $2);  }
     | simple-expr ';' { $$ = $1; printf("expr #2\n"); }
@@ -164,7 +163,6 @@ simple-expr:
     | op-log { $$ = $1; printf("simple-expr #3\n"); }
 ;
 
-// Arrumar na gramatica
 conditional-stmt:
     IF '(' simple-expr ')' comp-stmt { $$ = insert_node(CONDITIONAL_STATEMENT, $3, $5, NULL, $1); printf("conditional-stmt #1 %s\n", $1);}
     | IF '(' simple-expr ')' comp-stmt ELSE comp-stmt {
@@ -174,12 +172,10 @@ conditional-stmt:
     }
 ;
 
-// Arrumar na gramatica
 iteration-stmt:
     WHILE '(' simple-expr ')' comp-stmt { $$ = insert_node(ITERATION_STATEMENT, $3, $5, NULL, $1); printf("iteration-stmt %s\n", $1); }
 ;
 
-// Arrumar na gramatica
 return-stmt:
     RETURN simple-expr ';' { $$ = insert_node(RETURN_STATEMENT, NULL, $2, NULL, $1); printf("return-stmt #1 %s\n", $1); }
     | RETURN ';' { $$ = insert_node(RETURN_STATEMENT, NULL, NULL, NULL, $1); printf("return-stmt #2 %s\n", $1); }
@@ -208,7 +204,6 @@ term:
     | FLOAT { $$ = insert_node(FLOATNUMBER, NULL, NULL, NULL, $1); printf("term #6 %s\n", $1); }
 ;
 
-// Arrumar na gramatica
 call:
     ID '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #1 %s\n", $1); }
     | STRCONCAT '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #2 %s\n", $1); }
@@ -415,12 +410,14 @@ int main(int argc, char **argv) {
     yyparse();
     yylex_destroy();
     if(syntax_error == 0 && lex_error == 0){
+        system("clear"); 
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
         print_symbol_table();
     }
     else{
         if(lex_error != 0){
+            system("clear"); 
             showLexError();
         }
     }
