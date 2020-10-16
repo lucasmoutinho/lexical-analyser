@@ -3,13 +3,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "syntax.tab.h"
 
-int stringLen = 0;
 char openParenthesis[] = "(";
 char closeParenthesis[] = ")";
+int stringLen = 0;
 int line = 1;
-int error_pos = 0;
-int tableSize = 0;
+int lex_error = 0;
+int inside_string = 0;
 
 struct lexError {
     char symbol[100];
@@ -19,20 +20,12 @@ struct lexError {
 };
 
 struct lexError errors[100];
-
-struct symbolItem {
-    char symbol[100];
-};
-
-struct symbolItem symbolTable[500];
-
-int insertTable();
-
+void addLexError(char* text);
+void showLexError();
 %}
 %option noyywrap
 
 EOL \n
-SEP [{}();]
 DELIM [ \t]
 WHITESPACE {DELIM}+
 
@@ -43,16 +36,18 @@ DIGIT [0-9]
 INT "-"?{DIGIT}+
 FLOAT "-"?{DIGIT}+"."({DIGIT}*)?
 BOOL "true"|"false"
-%x STRING 
+%s STRING
+STR [^"]*
 TYPE "int"|"float"|"bool"|"void"|"string" 
 
-STMT "if"|"while"|"else"|"return"|"for"|"print"|"scan"|"strUpper"|"strLower"|"strConcat"|"strCompare"|"strCopy"|"strInsert"
 OP "+"|"-"|"*"|"/"
 ASSIGN "="
 RELOP "<="|"=="|">="|">"|"<"|"!="
 LOG "and"|"or"|"not"
 
 ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
+
+QUOTES \"
 
 %x COMMENT
 
@@ -62,75 +57,146 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
     line++;
 }
 
-{SEP} {
-    printf("SEP\t\t(%s) LENGTH %d\n", yytext, yyleng); 
-}
-
 {WHITESPACE} { }
 
 {INT} {
-    printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+    // printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return INT; 
 }
 
 {FLOAT} {
-    printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+    // printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return FLOAT; 
 }
 
 {BOOL} {
-    printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng); 
+    // printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return BOOL; 
 }
 
-\" {
-    printf("STRING\t\t%s%s", openParenthesis, yytext);
-    stringLen += 1;
-    BEGIN(STRING);
+
+<INITIAL,STRING>{QUOTES} {
+    if(inside_string) { 
+        BEGIN(0);
+        inside_string--;
+        // printf("%s%s\n", yytext, closeParenthesis);
+        return QUOTES;
+    }
+    else { 
+        BEGIN(STRING);
+        inside_string++;
+        // printf("STRING\t\t%s%s", openParenthesis, yytext);
+        return QUOTES;
+    }
 }
 
-<STRING>\" {
-    stringLen += 1;
-    printf("%s%s LENGTH %d\n", yytext, closeParenthesis, stringLen);
-    stringLen = 0;
-    BEGIN(INITIAL);
+
+<STRING>{STR} { 
+    if(yytext == "\n"){line++;} 
+    // printf("%s", yytext);
+    yylval.str = (char *) strdup(yytext);
+    return STR; 
 }
 
-<STRING>\n {
-    printf("%s", yytext);
-    stringLen += 1;
-    line++;
-}
-
-<STRING>. {
-    printf("%s", yytext);
-    stringLen += 1;
-}
 
 {TYPE} {
-    printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("TYPE\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return TYPE;
 }
 
-{STMT} {
-    printf("STMT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+"if" {
+    // printf("IF\n");
+    yylval.str = (char *) strdup(yytext);
+    return IF;
+}
+"else" {
+    // printf("ELSE\n");
+    yylval.str = (char *) strdup(yytext);
+    return ELSE;
+}
+"while" {
+    // printf("WHILE\n");
+    yylval.str = (char *) strdup(yytext);
+    return WHILE;
+}
+"return" {
+    // printf("RETURN\n");
+    yylval.str = (char *) strdup(yytext);
+    return RETURN;
+}
+"print" {
+    // printf("PRINT\n");
+    yylval.str = (char *) strdup(yytext);
+    return PRINT;
+}
+"scan" {
+    // printf("SCAN\n");
+    yylval.str = (char *) strdup(yytext);
+    return SCAN;
+}
+"strUpper" {
+    // printf("STRUPPER\n");
+    yylval.str = (char *) strdup(yytext);
+    return STRUPPER;
+}
+"strLower" {
+    // printf("STRLOWER\n");
+    yylval.str = (char *) strdup(yytext);
+    return STRLOWER;
+}
+"strConcat" {
+    // printf("STRCONCAT\n");
+    yylval.str = (char *) strdup(yytext);
+    return STRCONCAT;
+}
+"strCompare" {
+    // printf("CTRCOMPARE\n");
+    yylval.str = (char *) strdup(yytext);
+    return STRCOMPARE;
+}
+"strCopy" {
+    // printf("STRCOPY\n");
+    yylval.str = (char *) strdup(yytext);
+    return STRCOPY;
+}
+"strInsert" {
+    // printf("STRINSERT\n");
+    yylval.str = (char *) strdup(yytext);
+    return STRINSERT;
 }
 
 {OP} {
-    printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return OP;
 }
 
 {ASSIGN} {
-    printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return ASSIGN;
 }
 
 {RELOP} {
-    printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return RELOP;
 }
 
 {LOG} {
-    printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    // printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return LOG;
 }
 
 {ID} {
-    int address = insertTable(yytext);
-    printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
+    // printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
+    yylval.str = (char *) strdup(yytext);
+    return ID;
 }
 
 "/*" {
@@ -145,69 +211,55 @@ ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 
 <COMMENT>. { }
 
-. { 
-    struct lexError error; 
-    strcpy(error.symbol, yytext);
-    strcpy(error.type, "NO_SIMBOL");
-    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
-    error.line = line;
-    errors[error_pos] = error;
-    error_pos++;
+"," {
+    return yytext[0];
+}
+
+";" {
+    return yytext[0];
+}
+
+"(" {
+    return yytext[0];
+}
+
+")" {
+    return yytext[0];
+}
+
+"{" {
+    return yytext[0];
+}
+
+"}" {
+    return yytext[0];
+}
+
+. {
+    addLexError(yytext);
 }
 
 %%
 
-int insertTable(char symbol[100]){
-    int i = 0;
-    int address = -1;
-    while(i < tableSize && address == -1){
-        if(strcmp(symbolTable[i].symbol, symbol) == 0){
-            address = i;
-        }
-        i++;
-    }
-    if(address == -1){
-        strcpy(symbolTable[tableSize].symbol, symbol);
-        address = tableSize;
-        tableSize++;
-    }
-    return address;
+void addLexError(char* text) {
+    struct lexError error; 
+    strcpy(error.symbol, text);
+    strcpy(error.type, "NO_SIMBOL");
+    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
+    error.line = line;
+    errors[lex_error] = error;
+    lex_error++;
+    printf("lex_error %d\n", lex_error);
 }
 
-void showSymbolTable(){
-    int address = 0;
-    printf("\n\n------SYMBOL TABLE--------\n");
-    while(address < tableSize){
-        printf("%d -- Simbolo: %s\n", address, symbolTable[address].symbol);
-        address++;
-    }
-    printf("----------------------\n\n\n");
-}
-
-void showError(){
-    printf("----------------------\n");
-    printf("Number of errors: %d\n\n", error_pos);
+void showLexError(){
     int current_error = 0;
-    while(current_error < error_pos){
-        printf("------ERROR %d--------\n", current_error + 1);
+    while(current_error < lex_error){
+        printf("\n------LEX ERROR %d--------\n", current_error + 1);
         printf("Simbolo: %s\n", errors[current_error].symbol);
         printf("%s\n", errors[current_error].message);
         printf("Line: %d\n", errors[current_error].line);
         printf("----------------------\n");
         current_error++;
-    }
-}
-
-int main( int argc, char **argv ) {
-    ++argv, --argc;
-    if(argc > 0)
-        yyin = fopen( argv[0], "r" );
-    else
-        yyin = stdin;
-    yylex();
-    yylex_destroy();
-    showSymbolTable();
-    if(error_pos > 0){
-        showError();
     }
 }
