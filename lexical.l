@@ -118,70 +118,86 @@ QUOTES \"
 
 "if" {
     // printf("IF\n");
+    yylval.str = (char *) strdup(yytext);
     return IF;
 }
 "else" {
     // printf("ELSE\n");
+    yylval.str = (char *) strdup(yytext);
     return ELSE;
 }
 "while" {
     // printf("WHILE\n");
+    yylval.str = (char *) strdup(yytext);
     return WHILE;
 }
 "return" {
     // printf("RETURN\n");
+    yylval.str = (char *) strdup(yytext);
     return RETURN;
 }
 "print" {
     // printf("PRINT\n");
+    yylval.str = (char *) strdup(yytext);
     return PRINT;
 }
 "scan" {
     // printf("SCAN\n");
+    yylval.str = (char *) strdup(yytext);
     return SCAN;
 }
 "strUpper" {
     // printf("STRUPPER\n");
+    yylval.str = (char *) strdup(yytext);
     return STRUPPER;
 }
 "strLower" {
     // printf("STRLOWER\n");
+    yylval.str = (char *) strdup(yytext);
     return STRLOWER;
 }
 "strConcat" {
     // printf("STRCONCAT\n");
+    yylval.str = (char *) strdup(yytext);
     return STRCONCAT;
 }
 "strCompare" {
     // printf("CTRCOMPARE\n");
+    yylval.str = (char *) strdup(yytext);
     return STRCOMPARE;
 }
 "strCopy" {
     // printf("STRCOPY\n");
+    yylval.str = (char *) strdup(yytext);
     return STRCOPY;
 }
 "strInsert" {
     // printf("STRINSERT\n");
+    yylval.str = (char *) strdup(yytext);
     return STRINSERT;
 }
 
 {OP} {
     // printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return OP;
 }
 
 {ASSIGN} {
     // printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return ASSIGN;
 }
 
 {RELOP} {
     // printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return RELOP;
 }
 
 {LOG} {
     // printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return LOG;
 }
 

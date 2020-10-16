@@ -1,3 +1,13 @@
-string moutinho;
-int nicholas;
-float soneca;
+int main(){
+    int moutinho;
+    string soneca;
+    float nicholas;
+    moutinho = true;
+    if(moutinho){
+        soneca + 1;
+    }
+    else{
+        nicholas + 1.0;
+    }
+    return 0;
+}

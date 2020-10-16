@@ -1003,132 +1003,148 @@ YY_RULE_SETUP
 #line 119 "lexical.l"
 {
     // printf("IF\n");
+    yylval.str = (char *) strdup(yytext);
     return IF;
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 123 "lexical.l"
+#line 124 "lexical.l"
 {
     // printf("ELSE\n");
+    yylval.str = (char *) strdup(yytext);
     return ELSE;
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 127 "lexical.l"
+#line 129 "lexical.l"
 {
     // printf("WHILE\n");
+    yylval.str = (char *) strdup(yytext);
     return WHILE;
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 131 "lexical.l"
+#line 134 "lexical.l"
 {
     // printf("RETURN\n");
+    yylval.str = (char *) strdup(yytext);
     return RETURN;
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 135 "lexical.l"
+#line 139 "lexical.l"
 {
     // printf("PRINT\n");
+    yylval.str = (char *) strdup(yytext);
     return PRINT;
 }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 139 "lexical.l"
+#line 144 "lexical.l"
 {
     // printf("SCAN\n");
+    yylval.str = (char *) strdup(yytext);
     return SCAN;
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 143 "lexical.l"
+#line 149 "lexical.l"
 {
     // printf("STRUPPER\n");
+    yylval.str = (char *) strdup(yytext);
     return STRUPPER;
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 147 "lexical.l"
+#line 154 "lexical.l"
 {
     // printf("STRLOWER\n");
+    yylval.str = (char *) strdup(yytext);
     return STRLOWER;
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 151 "lexical.l"
+#line 159 "lexical.l"
 {
     // printf("STRCONCAT\n");
+    yylval.str = (char *) strdup(yytext);
     return STRCONCAT;
 }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 155 "lexical.l"
+#line 164 "lexical.l"
 {
     // printf("CTRCOMPARE\n");
+    yylval.str = (char *) strdup(yytext);
     return STRCOMPARE;
 }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 159 "lexical.l"
+#line 169 "lexical.l"
 {
     // printf("STRCOPY\n");
+    yylval.str = (char *) strdup(yytext);
     return STRCOPY;
 }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 163 "lexical.l"
+#line 174 "lexical.l"
 {
     // printf("STRINSERT\n");
+    yylval.str = (char *) strdup(yytext);
     return STRINSERT;
 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 168 "lexical.l"
+#line 180 "lexical.l"
 {
     // printf("OP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return OP;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 173 "lexical.l"
+#line 186 "lexical.l"
 {
     // printf("ASSIGN\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return ASSIGN;
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 178 "lexical.l"
+#line 192 "lexical.l"
 {
     // printf("RELOP\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return RELOP;
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 183 "lexical.l"
+#line 198 "lexical.l"
 {
     // printf("LOG\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
     return LOG;
 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 188 "lexical.l"
+#line 204 "lexical.l"
 {
     int address = insertTable(yytext);
     // printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
@@ -1138,14 +1154,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 195 "lexical.l"
+#line 211 "lexical.l"
 {
     BEGIN(COMMENT);
 }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 199 "lexical.l"
+#line 215 "lexical.l"
 {
     BEGIN(INITIAL);
 }
@@ -1153,27 +1169,27 @@ YY_RULE_SETUP
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
-#line 203 "lexical.l"
+#line 219 "lexical.l"
 {line++;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 205 "lexical.l"
+#line 221 "lexical.l"
 { }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 207 "lexical.l"
+#line 223 "lexical.l"
 {
     return yytext[0];
 }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 211 "lexical.l"
+#line 227 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 1177 "lex.yy.c"
+#line 1193 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING):
 case YY_STATE_EOF(COMMENT):
@@ -2180,7 +2196,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 211 "lexical.l"
+#line 227 "lexical.l"
 
 
 int insertTable(char symbol[100]){
