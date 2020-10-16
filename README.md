@@ -21,72 +21,37 @@ make
 
 Código de entrada:
 ```
-1. text = "ola";
-2. strUpper(text);
-3. print(text);
+1. int main(){
+2.     print("ola");
+3. }
 ```
 
-Saída do lexico:
+Saída do Analisador sintático:
 ```
-ID              (text) LENGTH 4 ADDRESS 0
-ASSIGN          (=) LENGTH 1
-STRING          ("ola") LENGTH 5
-SEP             (;) LENGTH 1
-STMT            (strUpper) LENGTH 8
-SEP             (() LENGTH 1
-ID              (text) LENGTH 4 ADDRESS 0
-SEP             ()) LENGTH 1
-SEP             (;) LENGTH 1
-STMT            (print) LENGTH 5
-SEP             (() LENGTH 1
-ID              (text) LENGTH 4 ADDRESS 0
-SEP             ()) LENGTH 1
-SEP             (;) LENGTH 1
+----------  ABSTRACT SYNTAX TREE ----------
+
+FUNCTION_DECLARATION | type: int | main | 
+-COMPOUND_STATEMENT | 
+--STATEMENT_LIST | 
+---PRINT | print | 
+----STRING | ola | 
 
 
-------SYMBOL TABLE--------
-0 -- Simbolo: text
-----------------------
+----------  TABELA DE SÍMBOLOS ----------
+
+key:              main::0 | name:                 main | type:        int | symbol_type: F | scope: 0
 ```
 
 ### 2) Exemplo com erros
 
 Código de entrada:
 ```
-1. text = "ola";
-2. strUpper(@text);
-3. print(text);
+1. int main(){
+2.     print("ola")
+3. }
 ```
 
 Saída do lexico:
 ```
-ID              (text) LENGTH 4 ADDRESS 0
-ASSIGN          (=) LENGTH 1
-STRING          ("ola") LENGTH 5
-SEP             (;) LENGTH 1
-STMT            (strUpper) LENGTH 8
-SEP             (() LENGTH 1
-ID              (text) LENGTH 4 ADDRESS 0
-SEP             ()) LENGTH 1
-SEP             (;) LENGTH 1
-STMT            (print) LENGTH 5
-SEP             (() LENGTH 1
-ID              (text) LENGTH 4 ADDRESS 0
-SEP             ()) LENGTH 1
-SEP             (;) LENGTH 1
-
-
-------SYMBOL TABLE--------
-0 -- Simbolo: text
-----------------------
-
-
-----------------------
-Number of errors: 1
-
-------ERROR 1--------
-Simbolo: @
-Simbolo nao reconhecido pela analise lexica
-Line: 2
-----------------------
+syntax error, unexpected '}', expecting ';' -- linha: 3
 ```
