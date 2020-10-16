@@ -33,11 +33,14 @@
 #define FUNCTION_CALL 21
 #define ARGS_LIST 22
 
+int syntax_error = 0;
 int yylex();
 extern int yylex_destroy(void);
 extern int line;
+extern int lex_error;
 void yyerror(const char* msg) {
-    fprintf(stderr, "%s -- linha: %d\n", msg, line);
+    fprintf(stderr, "\n%s -- linha: %d\n", msg, line);
+    syntax_error++;
 }
 extern FILE *yyin;
 
@@ -73,6 +76,7 @@ symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, 
 void add_symbol(char *name, char* type, char symbol_type, int scope);
 void print_symbol_table();
 void free_symbol_table();
+extern void showLexError();
 
 %}
 
@@ -331,7 +335,7 @@ void print_tree(node * tree, int depth) {
         print_depth(depth);
         print_class(tree->node_class);
         if (tree->var_type != NULL){
-            printf("var_type: %s | ", tree->var_type);
+            printf("type: %s | ", tree->var_type);
         }
         if (tree->nome != NULL){
             printf("%s | ", tree->nome);
@@ -410,9 +414,16 @@ int main(int argc, char **argv) {
         yyin = stdin;
     yyparse();
     yylex_destroy();
-    printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
-    print_tree(parser_tree, 0);
-    print_symbol_table();
+    if(syntax_error == 0 && lex_error == 0){
+        printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
+        print_tree(parser_tree, 0);
+        print_symbol_table();
+    }
+    else{
+        if(lex_error != 0){
+            showLexError();
+        }
+    }
     free_tree(parser_tree);
     free_symbol_table();
     return 0;

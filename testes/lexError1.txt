@@ -12,7 +12,7 @@ int main(){
 
     if(strUpper(text) == upper_text){
         print("Comparison Success, your number doubled is: ");
-        print(outputInteger);
+        print(outputIntege!r);
     }
     return 0;
 }

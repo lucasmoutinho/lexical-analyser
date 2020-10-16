@@ -5,12 +5,12 @@
 #include <stdio.h>
 #include "syntax.tab.h"
 
-int stringLen = 0;
 char openParenthesis[] = "(";
 char closeParenthesis[] = ")";
+int stringLen = 0;
 int line = 1;
-int error_pos = 0;
-int tableSize = 0;
+int lex_error = 0;
+int inside_string = 0;
 
 struct lexError {
     char symbol[100];
@@ -20,16 +20,8 @@ struct lexError {
 };
 
 struct lexError errors[100];
-
-struct symbolItem {
-    char symbol[100];
-};
-
-struct symbolItem symbolTable[500];
-
-int insertTable();
-
-int inside_string = 0;
+void addLexError(char* text);
+void showLexError();
 %}
 %option noyywrap
 
@@ -202,7 +194,6 @@ QUOTES \"
 }
 
 {ID} {
-    int address = insertTable(yytext);
     // printf("ID\t\t(%s) LENGTH %d ADDRESS %d\n", yytext, yyleng, address);
     yylval.str = (char *) strdup(yytext);
     return ID;
@@ -220,49 +211,55 @@ QUOTES \"
 
 <COMMENT>. { }
 
-. {
+"," {
     return yytext[0];
+}
+
+";" {
+    return yytext[0];
+}
+
+"(" {
+    return yytext[0];
+}
+
+")" {
+    return yytext[0];
+}
+
+"{" {
+    return yytext[0];
+}
+
+"}" {
+    return yytext[0];
+}
+
+. {
+    addLexError(yytext);
 }
 
 %%
 
-int insertTable(char symbol[100]){
-    int i = 0;
-    int address = -1;
-    while(i < tableSize && address == -1){
-        if(strcmp(symbolTable[i].symbol, symbol) == 0){
-            address = i;
-        }
-        i++;
-    }
-    if(address == -1){
-        strcpy(symbolTable[tableSize].symbol, symbol);
-        address = tableSize;
-        tableSize++;
-    }
-    return address;
+void addLexError(char* text) {
+    struct lexError error; 
+    strcpy(error.symbol, text);
+    strcpy(error.type, "NO_SIMBOL");
+    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
+    error.line = line;
+    errors[lex_error] = error;
+    lex_error++;
+    printf("lex_error %d\n", lex_error);
 }
 
-void showSymbolTable(){
-    int address = 0;
-    // printf("\n\n------SYMBOL TABLE--------\n");
-    while(address < tableSize){
-        // printf("%d -- Simbolo: %s\n", address, symbolTable[address].symbol);
-        address++;
-    }
-    // printf("----------------------\n\n\n");
-}
-
-void showError(){
-    // printf("----------------------\n");
-    // printf("Number of errors: %d\n\n", error_pos);
+void showLexError(){
     int current_error = 0;
-    while(current_error < error_pos){
-        // printf("------ERROR %d--------\n", current_error + 1);
-        // printf("Simbolo: %s\n", errors[current_error].symbol);
-        // printf("%s\n", errors[current_error].message);
-        // printf("Line: %d\n", errors[current_error].line);
-        // printf("----------------------\n");
+    while(current_error < lex_error){
+        printf("\n------LEX ERROR %d--------\n", current_error + 1);
+        printf("Simbolo: %s\n", errors[current_error].symbol);
+        printf("%s\n", errors[current_error].message);
+        printf("Line: %d\n", errors[current_error].line);
+        printf("----------------------\n");
         current_error++;
     }
 }

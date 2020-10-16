@@ -1,7 +1,7 @@
 string text;
 string upper_text;
 int inputInteger;
-float outputInteger;
+int;
 
 int main(){
     text = "The path of the righteous man";

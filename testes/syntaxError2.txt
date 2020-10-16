@@ -20,7 +20,7 @@ int main(){
     }
     else{
         while(always_true){
-            print("Não é lowerCase");
+            print("Não é lowerCase);
         }
     }
     return 0;

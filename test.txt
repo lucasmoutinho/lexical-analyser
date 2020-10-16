@@ -1,7 +1,11 @@
+/* 
+Função pra gerar string
+*/
 string generateString(string aux){
     return strLower(aux);
 }
 
+/* Main */
 int main(){
     string soneca;
     bool moutinho;
