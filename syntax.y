@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define DECLARATION 1
+#define DECLARATION_LIST 1
 #define VARIABLE 2
 #define VARIABLE_DECLARATION 3
 #define FUNCTION 4
@@ -23,6 +23,11 @@
 #define CONDITIONAL_STATEMENT 15
 #define INTEGER 16
 #define FLOATNUMBER 17
+#define PRINT_STATEMENT 18
+#define SCAN_STATEMENT 19
+#define STRING 20
+#define FUNCTION_CALL 21
+#define ARGS_LIST 22
 
 int yylex();
 extern int yylex_destroy(void);
@@ -78,9 +83,9 @@ prog:
 ;
 
 decl-list: 
-    decl-list var-decl { $$ = insert_node(DECLARATION, $1, $2, NULL, NULL); printf("decl-list #1\n"); }
+    decl-list var-decl { $$ = insert_node(DECLARATION_LIST, $1, $2, NULL, NULL); printf("decl-list #1\n"); }
     | var-decl { $$ = $1; printf("decl-list #2\n"); }
-    | decl-list func { $$ = insert_node(DECLARATION, $1, $2, NULL, NULL); printf("decl-list #3\n"); }
+    | decl-list func { $$ = insert_node(DECLARATION_LIST, $1, $2, NULL, NULL); printf("decl-list #3\n"); }
     | func { $$ = $1; printf("decl-list #4\n"); }
 ;
 
@@ -118,9 +123,9 @@ stmt:
     | conditional-stmt { $$ = $1; printf("stmt #2\n"); }
     | iteration-stmt { $$ = $1; printf("stmt #3\n"); }
     | return-stmt { $$ = $1; printf("stmt #4\n"); }
-    | PRINT '(' QUOTES string QUOTES ')' ';' {}
-    | PRINT '(' ID ')' ';' {}
-    | SCAN '(' ID ')' ';' {}
+    | PRINT '(' QUOTES string QUOTES ')' ';' { $$ = insert_node(PRINT_STATEMENT, $4, NULL, NULL, $1); printf("stmt #4 %s\n", $1); }
+    | PRINT '(' var ')' ';' { $$ = insert_node(PRINT_STATEMENT, $3, NULL, NULL, $1); printf("stmt #5 %s\n", $1); }
+    | SCAN '(' var ')' ';' { $$ = insert_node(SCAN_STATEMENT, $3, NULL, NULL, $1); printf("stmt #6 %s\n", $1); }
 ;
 
 // Arrumar na gramatica
@@ -135,6 +140,7 @@ simple-expr:
     | op-log { $$ = $1; printf("simple-expr #3\n"); }
 ;
 
+// Arrumar na gramatica
 conditional-stmt:
     IF '(' simple-expr ')' comp-stmt { $$ = insert_node(CONDITIONAL_STATEMENT, $3, $5, NULL, $1); printf("conditional-stmt #1 %s\n", $1);}
     | IF '(' simple-expr ')' comp-stmt ELSE comp-stmt {
@@ -144,10 +150,12 @@ conditional-stmt:
     }
 ;
 
+// Arrumar na gramatica
 iteration-stmt:
     WHILE '(' simple-expr ')' comp-stmt { $$ = insert_node(ITERATION_STATEMENT, $3, $5, NULL, $1); printf("iteration-stmt %s\n", $1); }
 ;
 
+// Arrumar na gramatica
 return-stmt:
     RETURN simple-expr ';' { $$ = insert_node(RETURN_STATEMENT, NULL, $2, NULL, $1); printf("return-stmt #1 %s\n", $1); }
     | RETURN ';' { $$ = insert_node(RETURN_STATEMENT, NULL, NULL, NULL, $1); printf("return-stmt #2 %s\n", $1); }
@@ -171,37 +179,35 @@ term:
     '(' simple-expr ')' { $$ = $2; printf("term #1\n"); }
     | var { $$ = $1; printf("term #2\n"); }
     | call { $$ = $1; printf("term #3\n"); }
-    | QUOTES string QUOTES {}
+    | QUOTES string QUOTES { $$ = $2; printf("term #4\n"); }
     | INT { $$ = insert_node(INTEGER, NULL, NULL, NULL, $1); printf("term #5 %s\n", $1); }
     | FLOAT { $$ = insert_node(FLOATNUMBER, NULL, NULL, NULL, $1); printf("term #6 %s\n", $1); }
 ;
 
 // Arrumar na gramatica
 call:
-    ID '(' args ')' {}
-    | STRCONCAT '(' QUOTES string QUOTES ',' QUOTES string QUOTES ')' {}
-    | STRCOMPARE '(' QUOTES string QUOTES ',' QUOTES string QUOTES ')' {}
-    | STRCOPY '(' QUOTES string QUOTES ',' QUOTES string QUOTES ')' {}
-    | STRINSERT '(' QUOTES string QUOTES ',' QUOTES string QUOTES ',' ID ')' {}
-    | STRUPPER '(' QUOTES string QUOTES ')' {}
-    | STRUPPER '(' ID ')' {}
-    | STRLOWER '(' QUOTES string QUOTES ')' {}
-    | STRLOWER '(' ID ')' {}
+    ID '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #1 %s\n", $1); }
+    | STRCONCAT '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #2 %s\n", $1); }
+    | STRCOMPARE '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #3 %s\n", $1); }
+    | STRCOPY '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #4 %s\n", $1); }
+    | STRINSERT '(' args ')' {  $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #5 %s\n", $1); }
+    | STRUPPER '(' args ')' {  $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #6 %s\n", $1); }
+    | STRLOWER '(' args ')' {  $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #7 %s\n", $1); }
 ;
 
 args:
-    arg-list {}
-    | {}
+    arg-list { $$ = $1; printf("args #1\n"); }
+    | { $$ = NULL; printf("args #2\n");}
 ;
 
 arg-list:
-    arg-list ',' simple-expr {}
-    | simple-expr {}
+    arg-list ',' simple-expr { $$ = insert_node(ARGS_LIST, $1, $3, NULL, NULL); printf("args-list #1\n"); }
+    | simple-expr { $$ = $1; printf("args-list #2\n"); }
 ;
 
 string: 
-    string STR {}
-    | {}
+    string STR { $$ = insert_node(STRING, $1, NULL, NULL, $2); printf("string #1 %s\n", $2); }
+    | { $$ = NULL; printf("string #2\n"); }
 %%
 
 node* insert_node(int node_class, node* left, node* right, char* var_type, char* nome){
@@ -218,8 +224,8 @@ node* insert_node(int node_class, node* left, node* right, char* var_type, char*
 
 void print_class(int node_class){
     switch(node_class){
-        case DECLARATION:
-            printf("DECLARATION");
+        case DECLARATION_LIST:
+            printf("DECLARATION_LIST");
         break;
         case VARIABLE:
             printf("VARIABLE");
@@ -268,6 +274,21 @@ void print_class(int node_class){
         break;
         case FLOATNUMBER:
             printf("FLOAT");
+        break;
+        case PRINT_STATEMENT:
+            printf("PRINT");
+        break;
+        case SCAN_STATEMENT:
+            printf("PRINT");
+        break;
+        case STRING:
+            printf("STRING");
+        break;
+        case FUNCTION_CALL:
+            printf("FUNCTION_CALL");
+        break;
+        case ARGS_LIST:
+            printf("ARGS_LIST");
         break;
     }
     printf(" | ");

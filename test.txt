@@ -1,13 +1,18 @@
+string generateString(string aux){
+    return strLower(aux);
+}
+
 int main(){
-    int moutinho;
     string soneca;
-    float nicholas;
+    bool moutinho;
+    int nicholas;
     moutinho = true;
+    soneca = "sua mae";
     if(moutinho){
-        soneca + 1;
+        nicholas = strCompare(soneca, generateString(soneca));
     }
-    else{
-        nicholas + 1.0;
+    if (nicholas){
+        print(soneca);
     }
     return 0;
 }
