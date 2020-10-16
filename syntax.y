@@ -5,6 +5,10 @@
 %{
 #include <stdlib.h>
 #include <stdio.h>
+#include "uthash.h"
+#include "utlist.h"
+#include "utstring.h"
+#include "utstack.h"
 
 #define DECLARATION_LIST 1
 #define VARIABLE 2
@@ -38,21 +42,37 @@ void yyerror(const char* msg) {
 extern FILE *yyin;
 
 typedef struct node {
-    int node_class; // identificador da classe
-    struct node* left;
-    struct node* right;
-    char* var_type; // Tipo da variável
-    char* nome; // Nome da variável, do operador, do valor, etc
-
+    int node_class;     // identificador da classe
+    struct node* left;  // Ponteiro pra esquerda 
+    struct node* right; // Ponteiro pra direita
+    char* var_type;     // Tipo da variável
+    char* nome;         // Nome da variável, do operador, do valor, etc
 } node;
 
 node* parser_tree = NULL; // Inicialização da árvore
+
+typedef struct symbol_node {
+    char* key;                      // key field
+    char* name;                     // symbol name
+    char* type;                      // int | float | bool | void | string 
+    char symbol_type;               // 'V' (variable) | 'F' (function) | 'P' (parameter)
+    int scope;                      // 0 for global variables and functions, 1..n inside functions
+    UT_hash_handle hh;              // makes this structure hashable
+} symbol_node;
+
+symbol_node *symbol_table = NULL;    /* important! initialize to NULL */
+int global_scope = 0;
 
 // Declarações de funções
 node* insert_node(int node_class, node* left, node* right, char* var_type, char* nome);
 void print_class(int node_class);
 void print_tree(node * tree, int depth);
 void print_depth(int depth);
+void free_tree(struct node* no);
+symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, int scope);
+void add_symbol(char *name, char* type, char symbol_type, int scope);
+void print_symbol_table();
+void free_symbol_table();
 
 %}
 
@@ -90,16 +110,16 @@ decl-list:
 ;
 
 var-decl:
-    TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, NULL, NULL, $1, $2); printf("var-decl %s %s\n", $1, $2); }
+    TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, NULL, NULL, $1, $2); add_symbol($2, $1, 'V', global_scope); printf("var-decl %s %s\n", $1, $2); }
 ;
 
 func:
-    TYPE ID '(' params ')' comp-stmt { $$ = insert_node(FUNCTION, $4, $6, $1, $2); printf("func %s %s\n", $1, $2); }
+    TYPE ID '(' params ')' comp-stmt { $$ = insert_node(FUNCTION, $4, $6, $1, $2); add_symbol($2, $1, 'F', global_scope); printf("func %s %s\n", $1, $2); }
 ;
 
 params:
-    params ',' TYPE ID { $$ = insert_node(PARAMETER, $1, NULL, $3, $4); printf("params #1 %s %s\n", $3, $4); }
-    | TYPE ID { $$ = insert_node(PARAMETER, NULL, NULL, $1, $2); printf("params #2 %s %s\n", $1, $2); }
+    params ',' TYPE ID { $$ = insert_node(PARAMETER, $1, NULL, $3, $4); add_symbol($4, $3, 'P', global_scope); printf("params #1 %s %s\n", $3, $4); }
+    | TYPE ID { $$ = insert_node(PARAMETER, NULL, NULL, $1, $2); add_symbol($2, $1, 'P', global_scope); printf("params #2 %s %s\n", $1, $2); }
     | { $$ = NULL; printf("params #3\n"); }
 ;
 
@@ -108,7 +128,7 @@ comp-stmt:
 ;
 
 local-decl:
-    local-decl TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, $1, NULL, $2, $3); printf("local-decl #1 %s %s\n", $2, $3); }
+    local-decl TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, $1, NULL, $2, $3); add_symbol($3, $2, 'V', global_scope); printf("local-decl #1 %s %s\n", $2, $3); }
     | { $$ = NULL; printf("local-decl #2\n"); }
 ;
 
@@ -210,6 +230,7 @@ string:
     | { $$ = NULL; printf("string #2\n"); }
 %%
 
+// Insere Nó
 node* insert_node(int node_class, node* left, node* right, char* var_type, char* nome){
     node* aux_node = (node*)calloc(1, sizeof(node));
 
@@ -222,6 +243,7 @@ node* insert_node(int node_class, node* left, node* right, char* var_type, char*
     return aux_node;
 }
 
+// Printa informação da classe do Nó
 void print_class(int node_class){
     switch(node_class){
         case DECLARATION_LIST:
@@ -234,7 +256,7 @@ void print_class(int node_class){
             printf("VARIABLE_DECLARATION");
         break;
         case FUNCTION:
-            printf("FUNCTION");
+            printf("FUNCTION_DECLARATION");
         break;
         case PARAMETER:
             printf("PARAMETER");
@@ -294,6 +316,7 @@ void print_class(int node_class){
     printf(" | ");
 }
 
+// Printa identação
 void print_depth(int depth) {
     int i = depth;
     while(i != 0){
@@ -302,6 +325,7 @@ void print_depth(int depth) {
     }
 }
 
+// Printa árvore
 void print_tree(node * tree, int depth) {
     if (tree) {
         print_depth(depth);
@@ -318,6 +342,66 @@ void print_tree(node * tree, int depth) {
     }
 }
 
+// Apaga a árvore
+void free_tree(struct node* no){
+    if(no == NULL) return;
+    if(no->left) free_tree(no->left);
+    if(no->right) free_tree(no->right);
+    free(no);
+}
+
+// Create symbol node
+symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, int scope){
+    symbol_node *s = (symbol_node *)malloc(sizeof *s);
+    s->key = key;
+    s->name = name;
+    s->type = type;
+    s->symbol_type = symbol_type;
+    s->scope = scope;
+    return s;
+}
+
+// Concatena strings do stackoverflow
+char* concat(const char *s1, const char *s2){
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    // in real code you would check for errors in malloc here
+    strcpy(result, s1);
+    strcat(result, "::");
+    strcat(result, s2);
+    return result;
+}
+
+// Adiciona simbolo na hash table
+void add_symbol(char *name, char* type, char symbol_type, int scope) {
+    symbol_node *s;
+    char scope_string[5];
+    sprintf(scope_string, "%d", scope);
+    char *key = concat(name, scope_string);
+    HASH_FIND_STR(symbol_table, name, s);
+    if(s == NULL){ // not declared -> add to symbol table
+        s = create_symbol(key, name, type, symbol_type, 0);
+        HASH_ADD_STR(symbol_table, name, s);
+    }
+}
+
+// Printa tabela de símbolos
+void print_symbol_table() {
+    symbol_node *s;
+    printf("\n\n----------  TABELA DE SÍMBOLOS ----------\n\n");
+    for(s=symbol_table; s != NULL; s=s->hh.next) {
+        printf("key: %20s | name: %20s | type: %10s | symbol_type: %c | scope: %d\n", s->key, s->name, s->type, s->symbol_type, s->scope);
+    }
+}
+
+// Libera toda a memória da tabela de símbolos
+void free_symbol_table(){
+    symbol_node *s, *tmp;
+    HASH_ITER(hh, symbol_table, s, tmp) {
+        HASH_DEL(symbol_table, s);
+        free(s);
+    }
+}
+
 int main(int argc, char **argv) {
     ++argv, --argc;
     if(argc > 0)
@@ -325,9 +409,11 @@ int main(int argc, char **argv) {
     else
         yyin = stdin;
     yyparse();
-    printf("\n---------------\n");
-    printf("Abstract Syntax Tree:\n\n");
-    print_tree(parser_tree, 0);
     yylex_destroy();
+    printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
+    print_tree(parser_tree, 0);
+    print_symbol_table();
+    free_tree(parser_tree);
+    free_symbol_table();
     return 0;
 }
