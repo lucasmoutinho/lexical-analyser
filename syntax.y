@@ -39,6 +39,7 @@ extern int yylex_destroy(void);
 extern int line;
 extern int lex_error;
 void yyerror(const char* msg) {
+    // O clear é para não aparecer os printfs de debug
     system("clear");
     fprintf(stderr, "\n%s -- linha: %d\n", msg, line);
     syntax_error++;
