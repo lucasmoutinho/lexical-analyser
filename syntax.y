@@ -55,17 +55,24 @@ typedef struct node {
 
 node* parser_tree = NULL; // Inicialização da árvore
 
+typedef struct scope {
+    char* scope_name;    // Nome do escopo
+    char* type;          // Tipo da variável
+    struct scope *next;
+} scope;
+
+scope* stack = NULL; // Inicialização da pilha de escopo
+
 typedef struct symbol_node {
     char* key;                      // key field
     char* name;                     // symbol name
-    char* type;                      // int | float | bool | void | string 
+    char* type;                     // int | float | bool | void | string 
     char symbol_type;               // 'V' (variable) | 'F' (function) | 'P' (parameter)
-    int scope;                      // 0 for global variables and functions, 1..n inside functions
+    char* scope_name;                // Nome do escopo
     UT_hash_handle hh;              // makes this structure hashable
 } symbol_node;
 
-symbol_node *symbol_table = NULL;    /* important! initialize to NULL */
-int global_scope = 0;
+symbol_node *symbol_table = NULL;    // Inicialização da tabela de símbolos
 
 // Declarações de funções
 node* insert_node(int node_class, node* left, node* right, char* var_type, char* nome);
@@ -73,11 +80,15 @@ void print_class(int node_class);
 void print_tree(node * tree, int depth);
 void print_depth(int depth);
 void free_tree(struct node* no);
-symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, int scope);
-void add_symbol(char *name, char* type, char symbol_type, int scope);
+symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, char* scope_name);
+void add_symbol(char *name, char* type, char symbol_type);
 void print_symbol_table();
 void free_symbol_table();
 extern void showLexError();
+scope* get_stack_head();
+void push_stack(char* scope_name, char* type);
+void pop_stack();
+void initialize_global_scope();
 
 %}
 
@@ -115,16 +126,17 @@ decl-list:
 ;
 
 var-decl:
-    TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, NULL, NULL, $1, $2); add_symbol($2, $1, 'V', global_scope); printf("var-decl %s %s\n", $1, $2); }
+    TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, NULL, NULL, $1, $2); add_symbol($2, $1, 'V'); printf("var-decl %s %s\n", $1, $2); }
 ;
 
 func:
-    TYPE ID '(' params ')' comp-stmt { $$ = insert_node(FUNCTION, $4, $6, $1, $2); add_symbol($2, $1, 'F', global_scope); printf("func %s %s\n", $1, $2); }
+    TYPE ID { add_symbol($2, $1, 'F'); push_stack($2, $1); }
+    '(' params ')' comp-stmt { $$ = insert_node(FUNCTION, $5, $7, $1, $2); pop_stack(); printf("func %s %s\n", $1, $2); }
 ;
 
 params:
-    params ',' TYPE ID { $$ = insert_node(PARAMETER, $1, NULL, $3, $4); add_symbol($4, $3, 'P', global_scope); printf("params #1 %s %s\n", $3, $4); }
-    | TYPE ID { $$ = insert_node(PARAMETER, NULL, NULL, $1, $2); add_symbol($2, $1, 'P', global_scope); printf("params #2 %s %s\n", $1, $2); }
+    params ',' TYPE ID { $$ = insert_node(PARAMETER, $1, NULL, $3, $4); add_symbol($4, $3, 'P'); printf("params #1 %s %s\n", $3, $4); }
+    | TYPE ID { $$ = insert_node(PARAMETER, NULL, NULL, $1, $2); add_symbol($2, $1, 'P'); printf("params #2 %s %s\n", $1, $2); }
     | { $$ = NULL; printf("params #3\n"); }
 ;
 
@@ -133,7 +145,7 @@ comp-stmt:
 ;
 
 local-decl:
-    local-decl TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, $1, NULL, $2, $3); add_symbol($3, $2, 'V', global_scope); printf("local-decl #1 %s %s\n", $2, $3); }
+    local-decl TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, $1, NULL, $2, $3); add_symbol($3, $2, 'V'); printf("local-decl #1 %s %s\n", $2, $3); }
     | { $$ = NULL; printf("local-decl #2\n"); }
 ;
 
@@ -350,13 +362,13 @@ void free_tree(struct node* no){
 }
 
 // Create symbol node
-symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, int scope){
+symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, char* scope_name){
     symbol_node *s = (symbol_node *)malloc(sizeof *s);
     s->key = key;
     s->name = name;
     s->type = type;
     s->symbol_type = symbol_type;
-    s->scope = scope;
+    s->scope_name = scope_name;
     return s;
 }
 
@@ -370,16 +382,49 @@ char* concat(const char *s1, const char *s2){
     return result;
 }
 
+// Retorna o stack head
+scope* get_stack_head() {
+    scope* s = stack;
+    while(s->next != NULL) {
+        s = s->next;
+    }
+    return s;
+}
+
+// Push do scope stack
+void push_stack(char* scope_name, char* type){
+    scope* s = (scope *)malloc(sizeof *s);
+    scope* stack_head;
+
+    s->type = type;
+    s->scope_name = scope_name;
+
+    stack_head = get_stack_head();
+    stack_head->next = s;
+}
+
+// Pop do scope stack
+void pop_stack(){
+    scope* s = stack;
+    if(s->scope_name == "global" && s->next == NULL) {
+        return;
+    }
+    while(s->next->next != NULL){
+        s = s->next;
+    }
+    free(s->next);
+    s->next = NULL;
+}
+
 // Adiciona simbolo na hash table
-void add_symbol(char *name, char* type, char symbol_type, int scope) {
+void add_symbol(char *name, char* type, char symbol_type) {
     symbol_node *s;
-    char scope_string[5];
-    sprintf(scope_string, "%d", scope);
-    char *key = concat(name, scope_string);
-    HASH_FIND_STR(symbol_table, name, s);
+    scope* scope = get_stack_head();
+    char *key = concat(name, scope->scope_name);
+    HASH_FIND_STR(symbol_table, key, s);
     if(s == NULL){ // not declared -> add to symbol table
-        s = create_symbol(key, name, type, symbol_type, 0);
-        HASH_ADD_STR(symbol_table, name, s);
+        s = create_symbol(key, name, type, symbol_type, scope->scope_name);
+        HASH_ADD_STR(symbol_table, key, s);
     }
 }
 
@@ -388,8 +433,14 @@ void print_symbol_table() {
     symbol_node *s;
     printf("\n\n----------  TABELA DE SÍMBOLOS ----------\n\n");
     for(s=symbol_table; s != NULL; s=s->hh.next) {
-        printf("key: %20s | name: %20s | type: %10s | symbol_type: %c | scope: %d\n", s->key, s->name, s->type, s->symbol_type, s->scope);
+        printf("key: %30s | name: %20s | type: %10s | symbol_type: %c | scope: %10s\n", s->key, s->name, s->type, s->symbol_type, s->scope_name);
     }
+}
+
+void initialize_global_scope(){
+    scope* s = (scope *)malloc(sizeof *s);
+    s->scope_name = "global";
+    stack = s;
 }
 
 // Libera toda a memória da tabela de símbolos
@@ -407,6 +458,7 @@ int main(int argc, char **argv) {
         yyin = fopen( argv[0], "r" );
     else
         yyin = stdin;
+    initialize_global_scope();
     yyparse();
     yylex_destroy();
     if(syntax_error == 0 && lex_error == 0){
