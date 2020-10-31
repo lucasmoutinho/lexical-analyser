@@ -5,13 +5,15 @@ string lowerCase(string aux){
     return strLower(aux);
 }
 
+int i;
+
 /* Main */
 int main(){
-    string stringTeste;
     bool always_true;
     int result;
     always_true = true;
     scan(stringTeste);
+    i = 0;
     if(always_true){
         result = stringTeste == strLower(stringTeste);
     }
@@ -20,7 +22,7 @@ int main(){
     }
     else{
         while(always_true){
-            print("Não é lowerCase);
+            print("Não é lowerCase");
         }
     }
     return 0;

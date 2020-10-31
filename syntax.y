@@ -91,6 +91,8 @@ void push_stack(char* scope_name, char* type);
 void pop_stack();
 void initialize_global_scope();
 void semantic_error_redeclaration(char* name, char* scope);
+void semantic_error_not_declared(char* name);
+void check_semantic_error_not_declared(char* name);
 
 %}
 
@@ -297,7 +299,8 @@ return-stmt:
 
 var:
     ID { 
-        $$ = insert_node(VARIABLE, NULL, NULL, NULL, $1); 
+        $$ = insert_node(VARIABLE, NULL, NULL, NULL, $1);
+        check_semantic_error_not_declared($1);
         if (DEBUG_MODE) {printf("var %s\n", $1);}
     }
 ;
@@ -352,8 +355,9 @@ term:
 ;
 
 call:
-    ID '(' args ')' { 
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); 
+    ID '(' args ')' {
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        check_semantic_error_not_declared($1);
         if (DEBUG_MODE) {printf("call #1 %s\n", $1);}
     }
     | STRCONCAT '(' args ')' { 
@@ -609,6 +613,7 @@ void print_symbol_table() {
     }
 }
 
+// Inicializa o escopo como global
 void initialize_global_scope(){
     scope* s = (scope *)malloc(sizeof *s);
     s->scope_name = "global";
@@ -624,11 +629,41 @@ void free_symbol_table(){
     }
 }
 
+// Erro semantico redeclaração
 void semantic_error_redeclaration(char* name, char* scope){
-    char *error = (char *)malloc((strlen(name) + strlen(scope) + 1 + 45) * sizeof(char)); // +1 for the null-terminator and 45 for semantic message
+    char *error = (char *)malloc((strlen(name) + strlen(scope) + 1 + 45) * sizeof(char)); // +1 for the null-terminator and 45 for semantic error message
     sprintf(error, "semantic error, %s was already declared in %s", name, scope);
     yyerror(error);
     free(error);
+}
+
+// Erro semantico não declarado
+void semantic_error_not_declared(char* name){
+    char *error = (char *)malloc((strlen(name) + 1 + 35) * sizeof(char)); // +1 for the null-terminator and 35 for semantic error message
+    sprintf(error, "semantic error, %s was not declared", name);
+    yyerror(error);
+    free(error);
+}
+
+// Checa se ocorreu erro semantico de não declaração
+void check_semantic_error_not_declared(char* name){
+    int found_symbol = 0;
+    symbol_node *s;
+    scope* scope = stack;
+    char *key;
+    while(scope != NULL){
+        // Procura no escopo global e nos escopos empilhados
+        key = concat(name, scope->scope_name);
+        HASH_FIND_STR(symbol_table, key, s);
+        if(s != NULL){
+            found_symbol = 1;
+            break;
+        }
+        scope = scope->next;
+    }
+    if(!found_symbol){ // Error not declared
+        semantic_error_not_declared(name);
+    }
 }
 
 int main(int argc, char **argv) {
