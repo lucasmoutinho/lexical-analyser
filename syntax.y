@@ -10,8 +10,8 @@
 #include "utstring.h"
 #include "utstack.h"
 
+// Defines
 #define DEBUG_MODE 0 // 0 to hide parser prints, 1 to display
-
 #define DECLARATION_LIST 1
 #define VARIABLE 2
 #define VARIABLE_DECLARATION 3
@@ -35,17 +35,16 @@
 #define FUNCTION_CALL 21
 #define ARGS_LIST 22
 
-int syntax_error = 0;
+// Extern variables
 int yylex();
 extern int yylex_destroy(void);
+extern int total_errors;
 extern int line;
 extern int lex_error;
-void yyerror(const char* msg) {
-    fprintf(stderr, "\n%s -- linha: %d\n", msg, line);
-    syntax_error++;
-}
+extern void yyerror(const char* msg);
 extern FILE *yyin;
 
+// Structs
 typedef struct node {
     int node_class;     // identificador da classe
     struct node* left;  // Ponteiro pra esquerda 
@@ -85,7 +84,6 @@ symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, 
 void add_symbol(char *name, char* type, char symbol_type);
 void print_symbol_table();
 void free_symbol_table();
-extern void showLexError();
 scope* get_stack_head();
 void push_stack(char* scope_name, char* type);
 void pop_stack();
@@ -675,15 +673,10 @@ int main(int argc, char **argv) {
     initialize_global_scope();
     yyparse();
     yylex_destroy();
-    if(syntax_error == 0 && lex_error == 0){
+    if(total_errors == 0){
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
         print_symbol_table();
-    }
-    else{
-        if(lex_error != 0){
-            showLexError();
-        }
     }
     free_tree(parser_tree);
     free_symbol_table();
