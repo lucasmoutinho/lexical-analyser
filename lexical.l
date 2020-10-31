@@ -153,11 +153,6 @@ QUOTES \"
     yylval.str = (char *) strdup(yytext);
     return STRCONCAT;
 }
-"strCompare" {
-    // printf("CTRCOMPARE\n");
-    yylval.str = (char *) strdup(yytext);
-    return STRCOMPARE;
-}
 "strCopy" {
     // printf("STRCOPY\n");
     yylval.str = (char *) strdup(yytext);

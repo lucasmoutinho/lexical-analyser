@@ -10,6 +10,8 @@
 #include "utstring.h"
 #include "utstack.h"
 
+#define DEBUG_MODE 0 // 0 to hide parser prints, 1 to display
+
 #define DECLARATION_LIST 1
 #define VARIABLE 2
 #define VARIABLE_DECLARATION 3
@@ -39,8 +41,6 @@ extern int yylex_destroy(void);
 extern int line;
 extern int lex_error;
 void yyerror(const char* msg) {
-    // O clear é para não aparecer os printfs de debug
-    // system("clear");
     fprintf(stderr, "\n%s -- linha: %d\n", msg, line);
     syntax_error++;
 }
@@ -90,6 +90,7 @@ scope* get_stack_head();
 void push_stack(char* scope_name, char* type);
 void pop_stack();
 void initialize_global_scope();
+void semantic_error_redeclaration(char* name, char* scope);
 
 %}
 
@@ -102,7 +103,7 @@ void initialize_global_scope();
 %token <str> TYPE
 %token <str> ID
 %token <str> IF ELSE WHILE RETURN PRINT SCAN 
-%token <str> STRUPPER STRLOWER STRCONCAT STRCOMPARE STRCOPY STRINSERT
+%token <str> STRUPPER STRLOWER STRCONCAT STRCOPY STRINSERT
 %token QUOTES
 
 %right <str> ASSIGN
@@ -116,130 +117,298 @@ void initialize_global_scope();
 %%
 
 prog: 
-    decl-list { parser_tree = $1; printf("prog\n"); }
+    decl-list { 
+        parser_tree = $1;
+        if (DEBUG_MODE) {printf("prog\n");}
+    }
 ;
-
 decl-list: 
-    decl-list var-decl { $$ = insert_node(DECLARATION_LIST, $1, $2, NULL, NULL); printf("decl-list #1\n"); }
-    | var-decl { $$ = $1; printf("decl-list #2\n"); }
-    | decl-list func { $$ = insert_node(DECLARATION_LIST, $1, $2, NULL, NULL); printf("decl-list #3\n"); }
-    | func { $$ = $1; printf("decl-list #4\n"); }
+    decl-list var-decl { 
+        $$ = insert_node(DECLARATION_LIST, $1, $2, NULL, NULL);
+        if (DEBUG_MODE) {printf("decl-list #1\n");} 
+    }
+    | var-decl { 
+        $$ = $1;
+        if (DEBUG_MODE) {printf("decl-list #2\n");}
+    }
+    | decl-list func { 
+        $$ = insert_node(DECLARATION_LIST, $1, $2, NULL, NULL);
+        if (DEBUG_MODE) {printf("decl-list #3\n");} 
+    }
+    | func { 
+        $$ = $1;
+        if (DEBUG_MODE) {printf("decl-list #4\n");}
+    }
 ;
 
 var-decl:
-    TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, NULL, NULL, $1, $2); add_symbol($2, $1, 'V'); printf("var-decl %s %s\n", $1, $2); }
+    TYPE ID ';' { 
+        $$ = insert_node(VARIABLE_DECLARATION, NULL, NULL, $1, $2);
+        add_symbol($2, $1, 'V');
+        if (DEBUG_MODE) {printf("var-decl %s %s\n", $1, $2);}
+    }
 ;
 
 func:
-    TYPE ID { add_symbol($2, $1, 'F'); push_stack($2, $1); }
-    '(' params ')' comp-stmt { $$ = insert_node(FUNCTION, $5, $7, $1, $2); pop_stack(); printf("func %s %s\n", $1, $2); }
+    TYPE ID { 
+        add_symbol($2, $1, 'F');
+        push_stack($2, $1);
+    }
+    '(' params ')' comp-stmt { 
+        $$ = insert_node(FUNCTION, $5, $7, $1, $2);
+        pop_stack();
+        if (DEBUG_MODE) {printf("func %s %s\n", $1, $2);}
+    }
 ;
 
 params:
-    params ',' TYPE ID { $$ = insert_node(PARAMETER, $1, NULL, $3, $4); add_symbol($4, $3, 'P'); printf("params #1 %s %s\n", $3, $4); }
-    | TYPE ID { $$ = insert_node(PARAMETER, NULL, NULL, $1, $2); add_symbol($2, $1, 'P'); printf("params #2 %s %s\n", $1, $2); }
-    | { $$ = NULL; printf("params #3\n"); }
+    params ',' TYPE ID { 
+        $$ = insert_node(PARAMETER, $1, NULL, $3, $4);
+        add_symbol($4, $3, 'P');
+        if (DEBUG_MODE) {printf("params #1 %s %s\n", $3, $4);}
+    }
+    | TYPE ID { 
+        $$ = insert_node(PARAMETER, NULL, NULL, $1, $2);
+        add_symbol($2, $1, 'P');
+        if (DEBUG_MODE) {printf("params #2 %s %s\n", $1, $2);}
+    }
+    | { 
+        $$ = NULL;
+        if (DEBUG_MODE) {printf("params #3\n");}
+    }
 ;
 
 comp-stmt:
-    '{' local-decl stmt-list '}' { $$ = insert_node(COMPOUND_STATEMENT, $2, $3, NULL, NULL); printf("comp-stmt\n"); }
+    '{' local-decl stmt-list '}' { 
+        $$ = insert_node(COMPOUND_STATEMENT, $2, $3, NULL, NULL);
+        if (DEBUG_MODE) {printf("comp-stmt\n");}
+    }
 ;
 
 local-decl:
-    local-decl TYPE ID ';' { $$ = insert_node(VARIABLE_DECLARATION, $1, NULL, $2, $3); add_symbol($3, $2, 'V'); printf("local-decl #1 %s %s\n", $2, $3); }
-    | { $$ = NULL; printf("local-decl #2\n"); }
+    local-decl TYPE ID ';' { 
+        $$ = insert_node(VARIABLE_DECLARATION, $1, NULL, $2, $3);
+        add_symbol($3, $2, 'V');
+        if (DEBUG_MODE) {printf("local-decl #1 %s %s\n", $2, $3);}
+    }
+    | { 
+        $$ = NULL; 
+        if (DEBUG_MODE) {printf("local-decl #2\n");}
+    }
 ;
 
 stmt-list:
-    stmt-list stmt { $$ = insert_node(STATEMENT_LIST, $1, $2, NULL, NULL); printf("stmt-list #1\n"); }
-    | { $$ = NULL; printf("stmt-list #2\n"); }
+    stmt-list stmt { 
+        $$ = insert_node(STATEMENT_LIST, $1, $2, NULL, NULL);
+        if (DEBUG_MODE) {printf("stmt-list #1\n");}
+    }
+    | { 
+        $$ = NULL; 
+        if (DEBUG_MODE) {printf("stmt-list #2\n");} 
+    }
 ;
 
 stmt: 
-    expr { $$ = $1; printf("stmt #1\n"); }
-    | conditional-stmt { $$ = $1; printf("stmt #2\n"); }
-    | iteration-stmt { $$ = $1; printf("stmt #3\n"); }
-    | return-stmt { $$ = $1; printf("stmt #4\n"); }
-    | PRINT '(' QUOTES string QUOTES ')' ';' { $$ = insert_node(PRINT_STATEMENT, $4, NULL, NULL, $1); printf("stmt #4 %s\n", $1); }
-    | PRINT '(' var ')' ';' { $$ = insert_node(PRINT_STATEMENT, $3, NULL, NULL, $1); printf("stmt #5 %s\n", $1); }
-    | SCAN '(' var ')' ';' { $$ = insert_node(SCAN_STATEMENT, $3, NULL, NULL, $1); printf("stmt #6 %s\n", $1); }
+    expr { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("stmt #1\n");} 
+    }
+    | conditional-stmt { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("stmt #2\n");} 
+    }
+    | iteration-stmt { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("stmt #3\n");}
+    }
+    | return-stmt { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("stmt #4\n");}
+    }
+    | PRINT '(' QUOTES string QUOTES ')' ';' { 
+        $$ = insert_node(PRINT_STATEMENT, $4, NULL, NULL, $1);
+        if (DEBUG_MODE) {printf("stmt #4 %s\n", $1);}
+    }
+    | PRINT '(' var ')' ';' { 
+        $$ = insert_node(PRINT_STATEMENT, $3, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("stmt #5 %s\n", $1);} 
+    }
+    | SCAN '(' var ')' ';' { 
+        $$ = insert_node(SCAN_STATEMENT, $3, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("stmt #6 %s\n", $1);}
+    }
 ;
 
 expr:
-    var ASSIGN expr { $$ = insert_node(ASSIGN_EXPRESSION, $1, $3, NULL, $2); printf("expr #1 %s\n", $2);  }
-    | simple-expr ';' { $$ = $1; printf("expr #2\n"); }
+    var ASSIGN expr { 
+        $$ = insert_node(ASSIGN_EXPRESSION, $1, $3, NULL, $2); 
+        if (DEBUG_MODE) {printf("expr #1 %s\n", $2);} 
+    }
+    | simple-expr ';' { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("expr #2\n");}
+    }
 ;
 
 simple-expr:
-    op-expr RELOP op-expr { $$ = insert_node(RELATIONAL_EXPRESSION, $1, $3, NULL, $2); printf("simple-expr #1 %s\n", $2); }
-    | op-expr { $$ = $1; printf("simple-expr #2\n"); }
-    | op-log { $$ = $1; printf("simple-expr #3\n"); }
+    op-expr RELOP op-expr { 
+        $$ = insert_node(RELATIONAL_EXPRESSION, $1, $3, NULL, $2); 
+        if (DEBUG_MODE) {printf("simple-expr #1 %s\n", $2);}
+    }
+    | op-expr { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("simple-expr #2\n");}
+    }
+    | op-log { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("simple-expr #3\n");}
+    }
 ;
 
 conditional-stmt:
-    IF '(' simple-expr ')' comp-stmt { $$ = insert_node(CONDITIONAL_STATEMENT, $3, $5, NULL, $1); printf("conditional-stmt #1 %s\n", $1);}
+    IF '(' simple-expr ')' comp-stmt { 
+        $$ = insert_node(CONDITIONAL_STATEMENT, $3, $5, NULL, $1);
+        if (DEBUG_MODE) {printf("conditional-stmt #1 %s\n", $1);}
+    }
     | IF '(' simple-expr ')' comp-stmt ELSE comp-stmt {
         node* aux_node = insert_node(CONDITIONAL_STATEMENT, $5, $7, NULL, $6);
         $$ = insert_node(CONDITIONAL_STATEMENT, $3, aux_node, NULL, $1);
-        printf("conditional-stmt #2 %s\n", $1);
+        if (DEBUG_MODE) {printf("conditional-stmt #2 %s\n", $1);}
     }
 ;
 
 iteration-stmt:
-    WHILE '(' simple-expr ')' comp-stmt { $$ = insert_node(ITERATION_STATEMENT, $3, $5, NULL, $1); printf("iteration-stmt %s\n", $1); }
+    WHILE '(' simple-expr ')' comp-stmt { 
+        $$ = insert_node(ITERATION_STATEMENT, $3, $5, NULL, $1);
+        if (DEBUG_MODE) {printf("iteration-stmt %s\n", $1);}
+    }
 ;
 
 return-stmt:
-    RETURN simple-expr ';' { $$ = insert_node(RETURN_STATEMENT, NULL, $2, NULL, $1); printf("return-stmt #1 %s\n", $1); }
-    | RETURN ';' { $$ = insert_node(RETURN_STATEMENT, NULL, NULL, NULL, $1); printf("return-stmt #2 %s\n", $1); }
+    RETURN simple-expr ';' { 
+        $$ = insert_node(RETURN_STATEMENT, NULL, $2, NULL, $1); 
+        if (DEBUG_MODE) {printf("return-stmt #1 %s\n", $1);}
+    }
+    | RETURN ';' { 
+        $$ = insert_node(RETURN_STATEMENT, NULL, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("return-stmt #2 %s\n", $1);}
+    }
 ;
 
 var:
-    ID { $$ = insert_node(VARIABLE, NULL, NULL, NULL, $1); printf("var %s\n", $1); }
+    ID { 
+        $$ = insert_node(VARIABLE, NULL, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("var %s\n", $1);}
+    }
 ;
 
 op-expr:
-    op-expr OP term { $$ = insert_node(ARITHIMETIC_EXPRESSION, $1, $3, NULL, $2); printf("op-expr #1 %s\n", $2); }
-    | term { $$ = $1; printf("op-expr #2\n"); }
+    op-expr OP term { 
+        $$ = insert_node(ARITHIMETIC_EXPRESSION, $1, $3, NULL, $2); 
+        if (DEBUG_MODE) {printf("op-expr #1 %s\n", $2);}
+    }
+    | term { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("op-expr #2\n");}
+    }
 ;
 
 op-log:
-    op-log LOG term { $$ = insert_node(LOGICAL_EXPRESSION, $1, $3, NULL, $2); printf("op-log #1 %s\n", $2); }
-    | BOOL { $$ = insert_node(BOOLEAN, NULL, NULL, NULL, $1); printf("op-log #2 %s\n", $1); }
+    op-log LOG term { 
+        $$ = insert_node(LOGICAL_EXPRESSION, $1, $3, NULL, $2); 
+        if (DEBUG_MODE) {printf("op-log #1 %s\n", $2);}
+    }
+    | BOOL { 
+        $$ = insert_node(BOOLEAN, NULL, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("op-log #2 %s\n", $1);}
+    }
 ;
 
 term:
-    '(' simple-expr ')' { $$ = $2; printf("term #1\n"); }
-    | var { $$ = $1; printf("term #2\n"); }
-    | call { $$ = $1; printf("term #3\n"); }
-    | QUOTES string QUOTES { $$ = $2; printf("term #4\n"); }
-    | INT { $$ = insert_node(INTEGER, NULL, NULL, NULL, $1); printf("term #5 %s\n", $1); }
-    | FLOAT { $$ = insert_node(FLOATNUMBER, NULL, NULL, NULL, $1); printf("term #6 %s\n", $1); }
+    '(' simple-expr ')' { 
+        $$ = $2; 
+        if (DEBUG_MODE) {printf("term #1\n");}
+    }
+    | var { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("term #2\n");}
+    }
+    | call { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("term #3\n");}
+    }
+    | QUOTES string QUOTES { 
+        $$ = $2; 
+        if (DEBUG_MODE) {printf("term #4\n");}
+    }
+    | INT { 
+        $$ = insert_node(INTEGER, NULL, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("term #5 %s\n", $1);}
+    }
+    | FLOAT { 
+        $$ = insert_node(FLOATNUMBER, NULL, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("term #6 %s\n", $1);}
+    }
 ;
 
 call:
-    ID '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #1 %s\n", $1); }
-    | STRCONCAT '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #2 %s\n", $1); }
-    | STRCOMPARE '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #3 %s\n", $1); }
-    | STRCOPY '(' args ')' { $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #4 %s\n", $1); }
-    | STRINSERT '(' args ')' {  $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #5 %s\n", $1); }
-    | STRUPPER '(' args ')' {  $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #6 %s\n", $1); }
-    | STRLOWER '(' args ')' {  $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); printf("call #7 %s\n", $1); }
+    ID '(' args ')' { 
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("call #1 %s\n", $1);}
+    }
+    | STRCONCAT '(' args ')' { 
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); 
+        if (DEBUG_MODE) {printf("call #2 %s\n", $1);}
+    }
+    | STRCOPY '(' args ')' { 
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        if (DEBUG_MODE) {printf("call #4 %s\n", $1);}
+    }
+    | STRINSERT '(' args ')' {  
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        if (DEBUG_MODE) {printf("call #5 %s\n", $1);}
+    }
+    | STRUPPER '(' args ')' {  
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        if (DEBUG_MODE) {printf("call #6 %s\n", $1);}
+    }
+    | STRLOWER '(' args ')' {  
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        if (DEBUG_MODE) {printf("call #7 %s\n", $1);}
+    }
 ;
 
 args:
-    arg-list { $$ = $1; printf("args #1\n"); }
-    | { $$ = NULL; printf("args #2\n");}
+    arg-list { 
+        $$ = $1;
+        if (DEBUG_MODE) {printf("args #1\n");}
+    }
+    | { 
+        $$ = NULL;
+        if (DEBUG_MODE) {printf("args #2\n");}
+    }
 ;
 
 arg-list:
-    arg-list ',' simple-expr { $$ = insert_node(ARGS_LIST, $1, $3, NULL, NULL); printf("args-list #1\n"); }
-    | simple-expr { $$ = $1; printf("args-list #2\n"); }
+    arg-list ',' simple-expr { 
+        $$ = insert_node(ARGS_LIST, $1, $3, NULL, NULL); 
+        if (DEBUG_MODE) {printf("args-list #1\n");}
+    }
+    | simple-expr { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("args-list #2\n");}
+    }
 ;
 
 string: 
-    string STR { $$ = insert_node(STRING, $1, NULL, NULL, $2); printf("string #1 %s\n", $2); }
-    | { $$ = NULL; printf("string #2\n"); }
+    string STR { 
+        $$ = insert_node(STRING, $1, NULL, NULL, $2); 
+        if (DEBUG_MODE) {printf("string #1 %s\n", $2);}
+    }
+    | { 
+        $$ = NULL; 
+        if (DEBUG_MODE) {printf("string #2\n");}
+    }
 %%
 
 // Insere Nó
@@ -376,7 +545,6 @@ symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, 
 // Concatena strings do stackoverflow
 char* concat(const char *s1, const char *s2){
     char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
-    // in real code you would check for errors in malloc here
     strcpy(result, s1);
     strcat(result, "::");
     strcat(result, s2);
@@ -427,6 +595,9 @@ void add_symbol(char *name, char* type, char symbol_type) {
         s = create_symbol(key, name, type, symbol_type, scope->scope_name);
         HASH_ADD_STR(symbol_table, key, s);
     }
+    else{ // redeclaration error
+        semantic_error_redeclaration(name, scope->scope_name);
+    }
 }
 
 // Printa tabela de símbolos
@@ -453,6 +624,13 @@ void free_symbol_table(){
     }
 }
 
+void semantic_error_redeclaration(char* name, char* scope){
+    char *error = (char *)malloc((strlen(name) + strlen(scope) + 1 + 45) * sizeof(char)); // +1 for the null-terminator and 45 for semantic message
+    sprintf(error, "semantic error, %s in %s was already declared", name, scope);
+    yyerror(error);
+    free(error);
+}
+
 int main(int argc, char **argv) {
     ++argv, --argc;
     if(argc > 0)
@@ -463,14 +641,12 @@ int main(int argc, char **argv) {
     yyparse();
     yylex_destroy();
     if(syntax_error == 0 && lex_error == 0){
-        system("clear"); 
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
         print_symbol_table();
     }
     else{
         if(lex_error != 0){
-            // system("clear");
             showLexError();
         }
     }
