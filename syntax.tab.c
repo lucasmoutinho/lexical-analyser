@@ -2465,7 +2465,7 @@ void free_symbol_table(){
 
 void semantic_error_redeclaration(char* name, char* scope){
     char *error = (char *)malloc((strlen(name) + strlen(scope) + 1 + 45) * sizeof(char)); // +1 for the null-terminator and 45 for semantic message
-    sprintf(error, "semantic error, %s in %s was already declared", name, scope);
+    sprintf(error, "semantic error, %s was already declared in %s", name, scope);
     yyerror(error);
     free(error);
 }
