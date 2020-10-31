@@ -43,7 +43,7 @@ TYPE "int"|"float"|"bool"|"void"|"string"
 OP "+"|"-"|"*"|"/"
 ASSIGN "="
 RELOP "<="|"=="|">="|">"|"<"|"!="
-LOG "and"|"or"|"not"
+LOG "&&"|"||"|"!"
 
 ID {LETTER}({LETTER}|{DIGIT}|{UNDERSCORE})*
 
