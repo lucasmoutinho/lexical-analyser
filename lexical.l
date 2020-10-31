@@ -5,23 +5,19 @@
 #include <stdio.h>
 #include "syntax.tab.h"
 
+// Variáveis globais
 char openParenthesis[] = "(";
 char closeParenthesis[] = ")";
 int stringLen = 0;
 int line = 1;
 int lex_error = 0;
 int inside_string = 0;
+int total_errors = 0;
 
-struct lexError {
-    char symbol[100];
-    char type[100];
-    char message[100];
-    int line;
-};
+// Declarações de funções
+void lexical_error_unrecognizable_symbol(char* symbol);
+void yyerror(const char* msg);
 
-struct lexError errors[100];
-void addLexError(char* text);
-void showLexError();
 %}
 %option noyywrap
 
@@ -153,11 +149,6 @@ QUOTES \"
     yylval.str = (char *) strdup(yytext);
     return STRCONCAT;
 }
-"strCompare" {
-    // printf("CTRCOMPARE\n");
-    yylval.str = (char *) strdup(yytext);
-    return STRCOMPARE;
-}
 "strCopy" {
     // printf("STRCOPY\n");
     yylval.str = (char *) strdup(yytext);
@@ -236,30 +227,19 @@ QUOTES \"
 }
 
 . {
-    addLexError(yytext);
+    lexical_error_unrecognizable_symbol(yytext);
 }
 
 %%
 
-void addLexError(char* text) {
-    struct lexError error; 
-    strcpy(error.symbol, text);
-    strcpy(error.type, "NO_SIMBOL");
-    strcpy(error.message, "Simbolo nao reconhecido pela analise lexica");
-    error.line = line;
-    errors[lex_error] = error;
-    lex_error++;
-    printf("lex_error %d\n", lex_error);
+void yyerror(const char* msg) {
+    fprintf(stderr, "\n%s -- linha: %d\n", msg, line);
+    total_errors++;
 }
 
-void showLexError(){
-    int current_error = 0;
-    while(current_error < lex_error){
-        printf("\n------LEX ERROR %d--------\n", current_error + 1);
-        printf("Simbolo: %s\n", errors[current_error].symbol);
-        printf("%s\n", errors[current_error].message);
-        printf("Line: %d\n", errors[current_error].line);
-        printf("----------------------\n");
-        current_error++;
-    }
+void lexical_error_unrecognizable_symbol(char* symbol){
+    char *error = (char *)malloc((strlen(symbol) + 1 + 35) * sizeof(char)); // +1 for the null-terminator and 35 for lex error message
+    sprintf(error, "lexical error, unrecognizable symbol %s", symbol);
+    yyerror(error);
+    free(error);
 }

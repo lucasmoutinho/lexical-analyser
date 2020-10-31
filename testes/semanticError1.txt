@@ -4,6 +4,10 @@ int inputInteger;
 float outputInteger;
 
 int main(){
+    string text;
+    int i;
+    float i;
+    i = 0;
     text = "The path of the righteous man";
     upper_text = "THE PATH OF THE RIGHTEOUS MAN";
     print("Enter an integer: ");
@@ -12,10 +16,7 @@ int main(){
 
     if(strUpper(text) == upper_text){
         print("Comparison Success, your number doubled is: ");
-        print(outputIntege%r);
+        print(outputInteger);
     }
     return 0;
 }
-
-INT VAR
-VAR = 1 + 2 + 3 + 5 + "ASDASDASD";

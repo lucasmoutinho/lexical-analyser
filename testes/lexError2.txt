@@ -13,7 +13,7 @@ int main(){
     always_true = true;
     scan(stringTeste);
     if(always_true){
-        result = strCompare(stringTeste, lowerCase(stringTeste));
+        result = stringTeste == strLower(stringTeste);
     }
     if (result){
         print(stringTeste);

@@ -60,14 +60,13 @@ extern int yydebug;
     STRUPPER = 270,
     STRLOWER = 271,
     STRCONCAT = 272,
-    STRCOMPARE = 273,
-    STRCOPY = 274,
-    STRINSERT = 275,
-    QUOTES = 276,
-    ASSIGN = 277,
-    OP = 278,
-    RELOP = 279,
-    LOG = 280
+    STRCOPY = 273,
+    STRINSERT = 274,
+    QUOTES = 275,
+    ASSIGN = 276,
+    OP = 277,
+    RELOP = 278,
+    LOG = 279
   };
 #endif
 
@@ -76,12 +75,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 96 "syntax.y" /* yacc.c:1909  */
+#line 97 "syntax.y" /* yacc.c:1909  */
 
     char* str;
     struct node* no;
 
-#line 85 "syntax.tab.h" /* yacc.c:1909  */
+#line 84 "syntax.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
