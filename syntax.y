@@ -643,6 +643,12 @@ void semantic_error_not_declared(char* name){
     free(error);
 }
 
+// symbol_node* find_symbol_node(char* name){
+//     symbol_node *s;
+//     scope* scope = stack;
+
+// }
+
 // Checa se ocorreu erro semantico de não declaração
 void check_semantic_error_not_declared(char* name){
     int found_symbol = 0;
@@ -663,6 +669,21 @@ void check_semantic_error_not_declared(char* name){
         semantic_error_not_declared(name);
     }
 }
+
+// // Erro semantico de tipo incompatível
+// void semantic_error_type_mismatch(char* type_left, char* name_left, char* type_right, char* name_right){
+//     char *error = (char *)malloc(
+//         (strlen(name_left) + strlen(type_left) + strlen(name_right) + strlen(type_right) + 1 + 55) * sizeof(char)
+//     ); // +1 for the null-terminator and 55 for semantic error message
+//     sprintf(error, "semantic error, type mismatch between %s(%s) and %s(%s)", type_left, name_left, type_right, name_right);
+//     yyerror(error);
+//     free(error);
+// }
+
+// // Checa se ocorreu erro semantico de tipos incompatíveis
+// void check_semantic_error_type_mismatch(char* name_left, char* name_right){
+
+// }
 
 int main(int argc, char **argv) {
     ++argv, --argc;
