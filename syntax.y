@@ -49,8 +49,8 @@ typedef struct node {
     int node_class;     // identificador da classe
     struct node* left;  // Ponteiro pra esquerda 
     struct node* right; // Ponteiro pra direita
-    char* var_type;     // Tipo da variável
-    char* nome;         // Nome da variável, do operador, do valor, etc
+    char* type;         // Tipo da nó
+    char* nome;         // Nome da nó
 } node;
 
 node* parser_tree = NULL; // Inicialização da árvore
@@ -75,7 +75,7 @@ typedef struct symbol_node {
 symbol_node *symbol_table = NULL;    // Inicialização da tabela de símbolos
 
 // Declarações de funções
-node* insert_node(int node_class, node* left, node* right, char* var_type, char* nome);
+node* insert_node(int node_class, node* left, node* right, char* type, char* nome);
 void print_class(int node_class);
 void print_tree(node * tree, int depth);
 void print_depth(int depth);
@@ -90,7 +90,7 @@ void pop_stack();
 void initialize_global_scope();
 void semantic_error_redeclaration(char* name, char* scope);
 void semantic_error_not_declared(char* name);
-void check_semantic_error_not_declared(char* name);
+symbol_node* find_symbol(char* name);
 
 %}
 
@@ -297,8 +297,12 @@ return-stmt:
 
 var:
     ID { 
-        $$ = insert_node(VARIABLE, NULL, NULL, NULL, $1);
-        check_semantic_error_not_declared($1);
+        symbol_node* s = find_symbol($1);
+        char* type = NULL;
+        if(s != NULL){
+            type = s->type;
+        }
+        $$ = insert_node(VARIABLE, NULL, NULL, type, $1);
         if (DEBUG_MODE) {printf("var %s\n", $1);}
     }
 ;
@@ -343,39 +347,43 @@ term:
         if (DEBUG_MODE) {printf("term #4\n");}
     }
     | INT { 
-        $$ = insert_node(INTEGER, NULL, NULL, NULL, $1); 
+        $$ = insert_node(INTEGER, NULL, NULL, "int", $1); 
         if (DEBUG_MODE) {printf("term #5 %s\n", $1);}
     }
     | FLOAT { 
-        $$ = insert_node(FLOATNUMBER, NULL, NULL, NULL, $1); 
+        $$ = insert_node(FLOATNUMBER, NULL, NULL, "float", $1); 
         if (DEBUG_MODE) {printf("term #6 %s\n", $1);}
     }
 ;
 
 call:
     ID '(' args ')' {
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
-        check_semantic_error_not_declared($1);
+        symbol_node* s = find_symbol($1);
+        char* type = NULL;
+        if(s != NULL){
+            type = s->type;
+        }
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, type, $1);
         if (DEBUG_MODE) {printf("call #1 %s\n", $1);}
     }
     | STRCONCAT '(' args ')' { 
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1); 
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1); 
         if (DEBUG_MODE) {printf("call #2 %s\n", $1);}
     }
     | STRCOPY '(' args ')' { 
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1);
         if (DEBUG_MODE) {printf("call #4 %s\n", $1);}
     }
     | STRINSERT '(' args ')' {  
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1);
         if (DEBUG_MODE) {printf("call #5 %s\n", $1);}
     }
     | STRUPPER '(' args ')' {  
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1);
         if (DEBUG_MODE) {printf("call #6 %s\n", $1);}
     }
     | STRLOWER '(' args ')' {  
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, NULL, $1);
+        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1);
         if (DEBUG_MODE) {printf("call #7 %s\n", $1);}
     }
 ;
@@ -404,7 +412,7 @@ arg-list:
 
 string: 
     string STR { 
-        $$ = insert_node(STRING, $1, NULL, NULL, $2); 
+        $$ = insert_node(STRING, $1, NULL, "string", $2); 
         if (DEBUG_MODE) {printf("string #1 %s\n", $2);}
     }
     | { 
@@ -414,13 +422,13 @@ string:
 %%
 
 // Insere Nó
-node* insert_node(int node_class, node* left, node* right, char* var_type, char* nome){
+node* insert_node(int node_class, node* left, node* right, char* type, char* nome){
     node* aux_node = (node*)calloc(1, sizeof(node));
 
     aux_node->node_class = node_class;
     aux_node->left = left;
     aux_node->right = right;
-    aux_node->var_type = var_type;
+    aux_node->type = type;
     aux_node->nome = nome;
 
     return aux_node;
@@ -513,8 +521,8 @@ void print_tree(node * tree, int depth) {
     if (tree) {
         print_depth(depth);
         print_class(tree->node_class);
-        if (tree->var_type != NULL){
-            printf("type: %s | ", tree->var_type);
+        if (tree->type != NULL){
+            printf("type: %s | ", tree->type);
         }
         if (tree->nome != NULL){
             printf("%s | ", tree->nome);
@@ -588,7 +596,7 @@ void pop_stack(){
 }
 
 // Adiciona simbolo na hash table
-void add_symbol(char *name, char* type, char symbol_type) {
+void add_symbol(char* name, char* type, char symbol_type) {
     symbol_node *s;
     scope* scope = get_stack_head();
     char *key = concat(name, scope->scope_name);
@@ -643,31 +651,21 @@ void semantic_error_not_declared(char* name){
     free(error);
 }
 
-// symbol_node* find_symbol_node(char* name){
-//     symbol_node *s;
-//     scope* scope = stack;
-
-// }
-
-// Checa se ocorreu erro semantico de não declaração
-void check_semantic_error_not_declared(char* name){
-    int found_symbol = 0;
+// Procura símbolo na tabela de símbolos
+symbol_node* find_symbol(char* name) {
     symbol_node *s;
-    scope* scope = stack;
-    char *key;
-    while(scope != NULL){
-        // Procura no escopo global e nos escopos empilhados
+    scope* scope = get_stack_head();
+    char *key = concat(name, scope->scope_name);
+    HASH_FIND_STR(symbol_table, key, s);
+    if(s == NULL && scope->scope_name != "global"){
+        scope = stack;
         key = concat(name, scope->scope_name);
         HASH_FIND_STR(symbol_table, key, s);
-        if(s != NULL){
-            found_symbol = 1;
-            break;
-        }
-        scope = scope->next;
     }
-    if(!found_symbol){ // Error not declared
+    if(s == NULL){
         semantic_error_not_declared(name);
     }
+    return s;
 }
 
 // // Erro semantico de tipo incompatível
