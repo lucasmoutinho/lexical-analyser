@@ -33,7 +33,7 @@ INT "-"?{DIGIT}+
 FLOAT "-"?{DIGIT}+"."({DIGIT}*)?
 BOOL "true"|"false"
 %s STRING
-STR [^"]*
+STR [^\"]*
 TYPE "int"|"float"|"bool"|"void"|"string" 
 
 OP "+"|"-"|"*"|"/"
@@ -54,25 +54,6 @@ QUOTES \"
 }
 
 {WHITESPACE} { }
-
-{INT} {
-    // printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng);
-    yylval.str = (char *) strdup(yytext);
-    return INT; 
-}
-
-{FLOAT} {
-    // printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng);
-    yylval.str = (char *) strdup(yytext);
-    return FLOAT; 
-}
-
-{BOOL} {
-    // printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng);
-    yylval.str = (char *) strdup(yytext);
-    return BOOL; 
-}
-
 
 <INITIAL,STRING>{QUOTES} {
     if(inside_string) { 
@@ -95,6 +76,24 @@ QUOTES \"
     // printf("%s", yytext);
     yylval.str = (char *) strdup(yytext);
     return STR; 
+}
+
+{INT} {
+    // printf("INT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return INT; 
+}
+
+{FLOAT} {
+    // printf("FLOAT\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return FLOAT; 
+}
+
+{BOOL} {
+    // printf("BOOL\t\t(%s) LENGTH %d\n", yytext, yyleng);
+    yylval.str = (char *) strdup(yytext);
+    return BOOL; 
 }
 
 

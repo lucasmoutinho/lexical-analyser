@@ -2543,13 +2543,11 @@ void add_implicit_conversion(node *no){
             no->right = conversion_node;
         }
         else{
-            printf("PRIMEIRO");
             conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
             no->left = conversion_node;
         }
     }
     else{
-        printf("SEGUNDO");
         conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
         no->right = conversion_node;
     }
