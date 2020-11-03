@@ -40,80 +40,78 @@ Gramática
 
    26 simple-expr: op-expr RELOP op-expr
    27            | op-expr
-   28            | op-log
 
-   29 conditional-stmt: IF '(' simple-expr ')' comp-stmt
-   30                 | IF '(' simple-expr ')' comp-stmt ELSE comp-stmt
+   28 conditional-stmt: IF '(' simple-expr ')' comp-stmt
+   29                 | IF '(' simple-expr ')' comp-stmt ELSE comp-stmt
 
-   31 iteration-stmt: WHILE '(' simple-expr ')' comp-stmt
+   30 iteration-stmt: WHILE '(' simple-expr ')' comp-stmt
 
-   32 return-stmt: RETURN simple-expr ';'
-   33            | RETURN ';'
+   31 return-stmt: RETURN simple-expr ';'
+   32            | RETURN ';'
 
-   34 var: ID
+   33 var: ID
 
-   35 op-expr: op-expr OP term
+   34 op-expr: op-expr OP term
+   35        | op-expr LOG term
    36        | term
 
-   37 op-log: op-log LOG term
-   38       | BOOL
+   37 term: '(' op-expr ')'
+   38     | var
+   39     | call
+   40     | QUOTES string QUOTES
+   41     | INT
+   42     | FLOAT
+   43     | BOOL
 
-   39 term: '(' simple-expr ')'
-   40     | var
-   41     | call
-   42     | QUOTES string QUOTES
-   43     | INT
-   44     | FLOAT
+   44 call: ID '(' args ')'
+   45     | STRCONCAT '(' args ')'
+   46     | STRCOPY '(' args ')'
+   47     | STRINSERT '(' args ')'
+   48     | STRUPPER '(' args ')'
+   49     | STRLOWER '(' args ')'
 
-   45 call: ID '(' args ')'
-   46     | STRCONCAT '(' args ')'
-   47     | STRCOPY '(' args ')'
-   48     | STRINSERT '(' args ')'
-   49     | STRUPPER '(' args ')'
-   50     | STRLOWER '(' args ')'
+   50 args: arg-list
+   51     | %empty
 
-   51 args: arg-list
-   52     | %empty
+   52 arg-list: arg-list ',' simple-expr
+   53         | simple-expr
 
-   53 arg-list: arg-list ',' simple-expr
-   54         | simple-expr
-
-   55 string: string STR
-   56       | %empty
+   54 string: string STR
+   55       | %empty
 
 
 Terminais, com as regras onde eles aparecem
 
 $end (0) 0
-'(' (40) 8 21 22 23 29 30 31 39 45 46 47 48 49 50
-')' (41) 8 21 22 23 29 30 31 39 45 46 47 48 49 50
-',' (44) 9 53
-';' (59) 6 13 21 22 23 25 32 33
+'(' (40) 8 21 22 23 28 29 30 37 44 45 46 47 48 49
+')' (41) 8 21 22 23 28 29 30 37 44 45 46 47 48 49
+',' (44) 9 52
+';' (59) 6 13 21 22 23 25 31 32
 '{' (123) 12
 '}' (125) 12
 error (256)
-INT (258) 43
-FLOAT (259) 44
-BOOL (260) 38
-STR (261) 55
+INT (258) 41
+FLOAT (259) 42
+BOOL (260) 43
+STR (261) 54
 TYPE (262) 6 8 9 10 13
-ID (263) 6 8 9 10 13 34 45
-IF (264) 29 30
-ELSE (265) 30
-WHILE (266) 31
-RETURN (267) 32 33
+ID (263) 6 8 9 10 13 33 44
+IF (264) 28 29
+ELSE (265) 29
+WHILE (266) 30
+RETURN (267) 31 32
 PRINT (268) 21 22
 SCAN (269) 23
-STRUPPER (270) 49
-STRLOWER (271) 50
-STRCONCAT (272) 46
-STRCOPY (273) 47
-STRINSERT (274) 48
-QUOTES (275) 21 42
+STRUPPER (270) 48
+STRLOWER (271) 49
+STRCONCAT (272) 45
+STRCOPY (273) 46
+STRINSERT (274) 47
+QUOTES (275) 21 40
 ASSIGN (276) 24
-OP (277) 35
+OP (277) 34
 RELOP (278) 26
-LOG (279) 37
+LOG (279) 35
 
 
 Não terminais com as regras onde eles aparecem
@@ -133,7 +131,7 @@ $@1 (36)
 params (37)
     à esquerda: 9 10 11, à direita: 8 9
 comp-stmt (38)
-    à esquerda: 12, à direita: 8 29 30 31
+    à esquerda: 12, à direita: 8 28 29 30
 local-decl (39)
     à esquerda: 13 14, à direita: 12 13
 stmt-list (40)
@@ -143,29 +141,27 @@ stmt (41)
 expr (42)
     à esquerda: 24 25, à direita: 17 24
 simple-expr (43)
-    à esquerda: 26 27 28, à direita: 25 29 30 31 32 39 53 54
+    à esquerda: 26 27, à direita: 25 28 29 30 31 52 53
 conditional-stmt (44)
-    à esquerda: 29 30, à direita: 18
+    à esquerda: 28 29, à direita: 18
 iteration-stmt (45)
-    à esquerda: 31, à direita: 19
+    à esquerda: 30, à direita: 19
 return-stmt (46)
-    à esquerda: 32 33, à direita: 20
+    à esquerda: 31 32, à direita: 20
 var (47)
-    à esquerda: 34, à direita: 22 23 24 40
+    à esquerda: 33, à direita: 22 23 24 38
 op-expr (48)
-    à esquerda: 35 36, à direita: 26 27 35
-op-log (49)
-    à esquerda: 37 38, à direita: 28 37
-term (50)
-    à esquerda: 39 40 41 42 43 44, à direita: 35 36 37
-call (51)
-    à esquerda: 45 46 47 48 49 50, à direita: 41
-args (52)
-    à esquerda: 51 52, à direita: 45 46 47 48 49 50
-arg-list (53)
-    à esquerda: 53 54, à direita: 51 53
-string (54)
-    à esquerda: 55 56, à direita: 21 42 55
+    à esquerda: 34 35 36, à direita: 26 27 34 35 37
+term (49)
+    à esquerda: 37 38 39 40 41 42 43, à direita: 34 35 36
+call (50)
+    à esquerda: 44 45 46 47 48 49, à direita: 39
+args (51)
+    à esquerda: 50 51, à direita: 44 45 46 47 48 49
+arg-list (52)
+    à esquerda: 52 53, à direita: 50 52
+string (53)
+    à esquerda: 54 55, à direita: 21 40 54
 
 
 Estado 0
@@ -400,68 +396,67 @@ Estado 24
     return-stmt       ir ao estado 48
     var               ir ao estado 49
     op-expr           ir ao estado 50
-    op-log            ir ao estado 51
-    term              ir ao estado 52
-    call              ir ao estado 53
+    term              ir ao estado 51
+    call              ir ao estado 52
 
 
 Estado 25
 
    13 local-decl: local-decl TYPE ID . ';'
 
-    ';'  deslocar, e ir ao estado 54
+    ';'  deslocar, e ir ao estado 53
 
 
 Estado 26
 
-   43 term: INT .
+   41 term: INT .
 
-    $padrão  reduzir usando a regra 43 (term)
+    $padrão  reduzir usando a regra 41 (term)
 
 
 Estado 27
 
-   44 term: FLOAT .
+   42 term: FLOAT .
 
-    $padrão  reduzir usando a regra 44 (term)
+    $padrão  reduzir usando a regra 42 (term)
 
 
 Estado 28
 
-   38 op-log: BOOL .
+   43 term: BOOL .
 
-    $padrão  reduzir usando a regra 38 (op-log)
+    $padrão  reduzir usando a regra 43 (term)
 
 
 Estado 29
 
-   34 var: ID .
-   45 call: ID . '(' args ')'
+   33 var: ID .
+   44 call: ID . '(' args ')'
 
-    '('  deslocar, e ir ao estado 55
+    '('  deslocar, e ir ao estado 54
 
-    $padrão  reduzir usando a regra 34 (var)
+    $padrão  reduzir usando a regra 33 (var)
 
 
 Estado 30
 
-   29 conditional-stmt: IF . '(' simple-expr ')' comp-stmt
-   30                 | IF . '(' simple-expr ')' comp-stmt ELSE comp-stmt
+   28 conditional-stmt: IF . '(' simple-expr ')' comp-stmt
+   29                 | IF . '(' simple-expr ')' comp-stmt ELSE comp-stmt
 
-    '('  deslocar, e ir ao estado 56
+    '('  deslocar, e ir ao estado 55
 
 
 Estado 31
 
-   31 iteration-stmt: WHILE . '(' simple-expr ')' comp-stmt
+   30 iteration-stmt: WHILE . '(' simple-expr ')' comp-stmt
 
-    '('  deslocar, e ir ao estado 57
+    '('  deslocar, e ir ao estado 56
 
 
 Estado 32
 
-   32 return-stmt: RETURN . simple-expr ';'
-   33            | RETURN . ';'
+   31 return-stmt: RETURN . simple-expr ';'
+   32            | RETURN . ';'
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -473,15 +468,14 @@ Estado 32
     STRCOPY    deslocar, e ir ao estado 38
     STRINSERT  deslocar, e ir ao estado 39
     QUOTES     deslocar, e ir ao estado 40
-    ';'        deslocar, e ir ao estado 58
+    ';'        deslocar, e ir ao estado 57
     '('        deslocar, e ir ao estado 41
 
-    simple-expr  ir ao estado 59
-    var          ir ao estado 60
+    simple-expr  ir ao estado 58
+    var          ir ao estado 59
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    term         ir ao estado 51
+    call         ir ao estado 52
 
 
 Estado 33
@@ -489,63 +483,63 @@ Estado 33
    21 stmt: PRINT . '(' QUOTES string QUOTES ')' ';'
    22     | PRINT . '(' var ')' ';'
 
-    '('  deslocar, e ir ao estado 61
+    '('  deslocar, e ir ao estado 60
 
 
 Estado 34
 
    23 stmt: SCAN . '(' var ')' ';'
 
-    '('  deslocar, e ir ao estado 62
+    '('  deslocar, e ir ao estado 61
 
 
 Estado 35
 
-   49 call: STRUPPER . '(' args ')'
+   48 call: STRUPPER . '(' args ')'
 
-    '('  deslocar, e ir ao estado 63
+    '('  deslocar, e ir ao estado 62
 
 
 Estado 36
 
-   50 call: STRLOWER . '(' args ')'
+   49 call: STRLOWER . '(' args ')'
 
-    '('  deslocar, e ir ao estado 64
+    '('  deslocar, e ir ao estado 63
 
 
 Estado 37
 
-   46 call: STRCONCAT . '(' args ')'
+   45 call: STRCONCAT . '(' args ')'
 
-    '('  deslocar, e ir ao estado 65
+    '('  deslocar, e ir ao estado 64
 
 
 Estado 38
 
-   47 call: STRCOPY . '(' args ')'
+   46 call: STRCOPY . '(' args ')'
 
-    '('  deslocar, e ir ao estado 66
+    '('  deslocar, e ir ao estado 65
 
 
 Estado 39
 
-   48 call: STRINSERT . '(' args ')'
+   47 call: STRINSERT . '(' args ')'
 
-    '('  deslocar, e ir ao estado 67
+    '('  deslocar, e ir ao estado 66
 
 
 Estado 40
 
-   42 term: QUOTES . string QUOTES
+   40 term: QUOTES . string QUOTES
 
-    $padrão  reduzir usando a regra 56 (string)
+    $padrão  reduzir usando a regra 55 (string)
 
-    string  ir ao estado 68
+    string  ir ao estado 67
 
 
 Estado 41
 
-   39 term: '(' . simple-expr ')'
+   37 term: '(' . op-expr ')'
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -559,12 +553,10 @@ Estado 41
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    simple-expr  ir ao estado 69
-    var          ir ao estado 60
-    op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    var      ir ao estado 59
+    op-expr  ir ao estado 68
+    term     ir ao estado 51
+    call     ir ao estado 52
 
 
 Estado 42
@@ -592,7 +584,7 @@ Estado 45
 
    25 expr: simple-expr . ';'
 
-    ';'  deslocar, e ir ao estado 70
+    ';'  deslocar, e ir ao estado 69
 
 
 Estado 46
@@ -619,59 +611,51 @@ Estado 48
 Estado 49
 
    24 expr: var . ASSIGN expr
-   40 term: var .
+   38 term: var .
 
-    ASSIGN  deslocar, e ir ao estado 71
+    ASSIGN  deslocar, e ir ao estado 70
 
-    $padrão  reduzir usando a regra 40 (term)
+    $padrão  reduzir usando a regra 38 (term)
 
 
 Estado 50
 
    26 simple-expr: op-expr . RELOP op-expr
    27            | op-expr .
-   35 op-expr: op-expr . OP term
+   34 op-expr: op-expr . OP term
+   35        | op-expr . LOG term
 
-    OP     deslocar, e ir ao estado 72
-    RELOP  deslocar, e ir ao estado 73
+    OP     deslocar, e ir ao estado 71
+    RELOP  deslocar, e ir ao estado 72
+    LOG    deslocar, e ir ao estado 73
 
     $padrão  reduzir usando a regra 27 (simple-expr)
 
 
 Estado 51
 
-   28 simple-expr: op-log .
-   37 op-log: op-log . LOG term
-
-    LOG  deslocar, e ir ao estado 74
-
-    $padrão  reduzir usando a regra 28 (simple-expr)
-
-
-Estado 52
-
    36 op-expr: term .
 
     $padrão  reduzir usando a regra 36 (op-expr)
 
 
+Estado 52
+
+   39 term: call .
+
+    $padrão  reduzir usando a regra 39 (term)
+
+
 Estado 53
-
-   41 term: call .
-
-    $padrão  reduzir usando a regra 41 (term)
-
-
-Estado 54
 
    13 local-decl: local-decl TYPE ID ';' .
 
     $padrão  reduzir usando a regra 13 (local-decl)
 
 
-Estado 55
+Estado 54
 
-   45 call: ID '(' . args ')'
+   44 call: ID '(' . args ')'
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -685,22 +669,44 @@ Estado 55
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    $padrão  reduzir usando a regra 52 (args)
+    $padrão  reduzir usando a regra 51 (args)
 
-    simple-expr  ir ao estado 75
-    var          ir ao estado 60
+    simple-expr  ir ao estado 74
+    var          ir ao estado 59
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
-    args         ir ao estado 76
-    arg-list     ir ao estado 77
+    term         ir ao estado 51
+    call         ir ao estado 52
+    args         ir ao estado 75
+    arg-list     ir ao estado 76
+
+
+Estado 55
+
+   28 conditional-stmt: IF '(' . simple-expr ')' comp-stmt
+   29                 | IF '(' . simple-expr ')' comp-stmt ELSE comp-stmt
+
+    INT        deslocar, e ir ao estado 26
+    FLOAT      deslocar, e ir ao estado 27
+    BOOL       deslocar, e ir ao estado 28
+    ID         deslocar, e ir ao estado 29
+    STRUPPER   deslocar, e ir ao estado 35
+    STRLOWER   deslocar, e ir ao estado 36
+    STRCONCAT  deslocar, e ir ao estado 37
+    STRCOPY    deslocar, e ir ao estado 38
+    STRINSERT  deslocar, e ir ao estado 39
+    QUOTES     deslocar, e ir ao estado 40
+    '('        deslocar, e ir ao estado 41
+
+    simple-expr  ir ao estado 77
+    var          ir ao estado 59
+    op-expr      ir ao estado 50
+    term         ir ao estado 51
+    call         ir ao estado 52
 
 
 Estado 56
 
-   29 conditional-stmt: IF '(' . simple-expr ')' comp-stmt
-   30                 | IF '(' . simple-expr ')' comp-stmt ELSE comp-stmt
+   30 iteration-stmt: WHILE '(' . simple-expr ')' comp-stmt
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -715,81 +721,83 @@ Estado 56
     '('        deslocar, e ir ao estado 41
 
     simple-expr  ir ao estado 78
-    var          ir ao estado 60
+    var          ir ao estado 59
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    term         ir ao estado 51
+    call         ir ao estado 52
 
 
 Estado 57
 
-   31 iteration-stmt: WHILE '(' . simple-expr ')' comp-stmt
+   32 return-stmt: RETURN ';' .
 
-    INT        deslocar, e ir ao estado 26
-    FLOAT      deslocar, e ir ao estado 27
-    BOOL       deslocar, e ir ao estado 28
-    ID         deslocar, e ir ao estado 29
-    STRUPPER   deslocar, e ir ao estado 35
-    STRLOWER   deslocar, e ir ao estado 36
-    STRCONCAT  deslocar, e ir ao estado 37
-    STRCOPY    deslocar, e ir ao estado 38
-    STRINSERT  deslocar, e ir ao estado 39
-    QUOTES     deslocar, e ir ao estado 40
-    '('        deslocar, e ir ao estado 41
-
-    simple-expr  ir ao estado 79
-    var          ir ao estado 60
-    op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    $padrão  reduzir usando a regra 32 (return-stmt)
 
 
 Estado 58
 
-   33 return-stmt: RETURN ';' .
+   31 return-stmt: RETURN simple-expr . ';'
 
-    $padrão  reduzir usando a regra 33 (return-stmt)
+    ';'  deslocar, e ir ao estado 79
 
 
 Estado 59
 
-   32 return-stmt: RETURN simple-expr . ';'
+   38 term: var .
 
-    ';'  deslocar, e ir ao estado 80
+    $padrão  reduzir usando a regra 38 (term)
 
 
 Estado 60
 
-   40 term: var .
+   21 stmt: PRINT '(' . QUOTES string QUOTES ')' ';'
+   22     | PRINT '(' . var ')' ';'
 
-    $padrão  reduzir usando a regra 40 (term)
+    ID      deslocar, e ir ao estado 80
+    QUOTES  deslocar, e ir ao estado 81
+
+    var  ir ao estado 82
 
 
 Estado 61
 
-   21 stmt: PRINT '(' . QUOTES string QUOTES ')' ';'
-   22     | PRINT '(' . var ')' ';'
+   23 stmt: SCAN '(' . var ')' ';'
 
-    ID      deslocar, e ir ao estado 81
-    QUOTES  deslocar, e ir ao estado 82
+    ID  deslocar, e ir ao estado 80
 
     var  ir ao estado 83
 
 
 Estado 62
 
-   23 stmt: SCAN '(' . var ')' ';'
+   48 call: STRUPPER '(' . args ')'
 
-    ID  deslocar, e ir ao estado 81
+    INT        deslocar, e ir ao estado 26
+    FLOAT      deslocar, e ir ao estado 27
+    BOOL       deslocar, e ir ao estado 28
+    ID         deslocar, e ir ao estado 29
+    STRUPPER   deslocar, e ir ao estado 35
+    STRLOWER   deslocar, e ir ao estado 36
+    STRCONCAT  deslocar, e ir ao estado 37
+    STRCOPY    deslocar, e ir ao estado 38
+    STRINSERT  deslocar, e ir ao estado 39
+    QUOTES     deslocar, e ir ao estado 40
+    '('        deslocar, e ir ao estado 41
 
-    var  ir ao estado 84
+    $padrão  reduzir usando a regra 51 (args)
+
+    simple-expr  ir ao estado 74
+    var          ir ao estado 59
+    op-expr      ir ao estado 50
+    term         ir ao estado 51
+    call         ir ao estado 52
+    args         ir ao estado 84
+    arg-list     ir ao estado 76
 
 
 Estado 63
 
-   49 call: STRUPPER '(' . args ')'
+   49 call: STRLOWER '(' . args ')'
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -803,21 +811,20 @@ Estado 63
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    $padrão  reduzir usando a regra 52 (args)
+    $padrão  reduzir usando a regra 51 (args)
 
-    simple-expr  ir ao estado 75
-    var          ir ao estado 60
+    simple-expr  ir ao estado 74
+    var          ir ao estado 59
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    term         ir ao estado 51
+    call         ir ao estado 52
     args         ir ao estado 85
-    arg-list     ir ao estado 77
+    arg-list     ir ao estado 76
 
 
 Estado 64
 
-   50 call: STRLOWER '(' . args ')'
+   45 call: STRCONCAT '(' . args ')'
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -831,21 +838,20 @@ Estado 64
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    $padrão  reduzir usando a regra 52 (args)
+    $padrão  reduzir usando a regra 51 (args)
 
-    simple-expr  ir ao estado 75
-    var          ir ao estado 60
+    simple-expr  ir ao estado 74
+    var          ir ao estado 59
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    term         ir ao estado 51
+    call         ir ao estado 52
     args         ir ao estado 86
-    arg-list     ir ao estado 77
+    arg-list     ir ao estado 76
 
 
 Estado 65
 
-   46 call: STRCONCAT '(' . args ')'
+   46 call: STRCOPY '(' . args ')'
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -859,21 +865,20 @@ Estado 65
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    $padrão  reduzir usando a regra 52 (args)
+    $padrão  reduzir usando a regra 51 (args)
 
-    simple-expr  ir ao estado 75
-    var          ir ao estado 60
+    simple-expr  ir ao estado 74
+    var          ir ao estado 59
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    term         ir ao estado 51
+    call         ir ao estado 52
     args         ir ao estado 87
-    arg-list     ir ao estado 77
+    arg-list     ir ao estado 76
 
 
 Estado 66
 
-   47 call: STRCOPY '(' . args ')'
+   47 call: STRINSERT '(' . args ')'
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -887,70 +892,45 @@ Estado 66
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    $padrão  reduzir usando a regra 52 (args)
+    $padrão  reduzir usando a regra 51 (args)
 
-    simple-expr  ir ao estado 75
-    var          ir ao estado 60
+    simple-expr  ir ao estado 74
+    var          ir ao estado 59
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    term         ir ao estado 51
+    call         ir ao estado 52
     args         ir ao estado 88
-    arg-list     ir ao estado 77
+    arg-list     ir ao estado 76
 
 
 Estado 67
 
-   48 call: STRINSERT '(' . args ')'
+   40 term: QUOTES string . QUOTES
+   54 string: string . STR
 
-    INT        deslocar, e ir ao estado 26
-    FLOAT      deslocar, e ir ao estado 27
-    BOOL       deslocar, e ir ao estado 28
-    ID         deslocar, e ir ao estado 29
-    STRUPPER   deslocar, e ir ao estado 35
-    STRLOWER   deslocar, e ir ao estado 36
-    STRCONCAT  deslocar, e ir ao estado 37
-    STRCOPY    deslocar, e ir ao estado 38
-    STRINSERT  deslocar, e ir ao estado 39
-    QUOTES     deslocar, e ir ao estado 40
-    '('        deslocar, e ir ao estado 41
-
-    $padrão  reduzir usando a regra 52 (args)
-
-    simple-expr  ir ao estado 75
-    var          ir ao estado 60
-    op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
-    args         ir ao estado 89
-    arg-list     ir ao estado 77
+    STR     deslocar, e ir ao estado 89
+    QUOTES  deslocar, e ir ao estado 90
 
 
 Estado 68
 
-   42 term: QUOTES string . QUOTES
-   55 string: string . STR
+   34 op-expr: op-expr . OP term
+   35        | op-expr . LOG term
+   37 term: '(' op-expr . ')'
 
-    STR     deslocar, e ir ao estado 90
-    QUOTES  deslocar, e ir ao estado 91
+    OP   deslocar, e ir ao estado 71
+    LOG  deslocar, e ir ao estado 73
+    ')'  deslocar, e ir ao estado 91
 
 
 Estado 69
-
-   39 term: '(' simple-expr . ')'
-
-    ')'  deslocar, e ir ao estado 92
-
-
-Estado 70
 
    25 expr: simple-expr ';' .
 
     $padrão  reduzir usando a regra 25 (expr)
 
 
-Estado 71
+Estado 70
 
    24 expr: var ASSIGN . expr
 
@@ -966,249 +946,17 @@ Estado 71
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    expr         ir ao estado 93
+    expr         ir ao estado 92
     simple-expr  ir ao estado 45
     var          ir ao estado 49
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    term         ir ao estado 51
+    call         ir ao estado 52
 
 
-Estado 72
+Estado 71
 
-   35 op-expr: op-expr OP . term
-
-    INT        deslocar, e ir ao estado 26
-    FLOAT      deslocar, e ir ao estado 27
-    ID         deslocar, e ir ao estado 29
-    STRUPPER   deslocar, e ir ao estado 35
-    STRLOWER   deslocar, e ir ao estado 36
-    STRCONCAT  deslocar, e ir ao estado 37
-    STRCOPY    deslocar, e ir ao estado 38
-    STRINSERT  deslocar, e ir ao estado 39
-    QUOTES     deslocar, e ir ao estado 40
-    '('        deslocar, e ir ao estado 41
-
-    var   ir ao estado 60
-    term  ir ao estado 94
-    call  ir ao estado 53
-
-
-Estado 73
-
-   26 simple-expr: op-expr RELOP . op-expr
-
-    INT        deslocar, e ir ao estado 26
-    FLOAT      deslocar, e ir ao estado 27
-    ID         deslocar, e ir ao estado 29
-    STRUPPER   deslocar, e ir ao estado 35
-    STRLOWER   deslocar, e ir ao estado 36
-    STRCONCAT  deslocar, e ir ao estado 37
-    STRCOPY    deslocar, e ir ao estado 38
-    STRINSERT  deslocar, e ir ao estado 39
-    QUOTES     deslocar, e ir ao estado 40
-    '('        deslocar, e ir ao estado 41
-
-    var      ir ao estado 60
-    op-expr  ir ao estado 95
-    term     ir ao estado 52
-    call     ir ao estado 53
-
-
-Estado 74
-
-   37 op-log: op-log LOG . term
-
-    INT        deslocar, e ir ao estado 26
-    FLOAT      deslocar, e ir ao estado 27
-    ID         deslocar, e ir ao estado 29
-    STRUPPER   deslocar, e ir ao estado 35
-    STRLOWER   deslocar, e ir ao estado 36
-    STRCONCAT  deslocar, e ir ao estado 37
-    STRCOPY    deslocar, e ir ao estado 38
-    STRINSERT  deslocar, e ir ao estado 39
-    QUOTES     deslocar, e ir ao estado 40
-    '('        deslocar, e ir ao estado 41
-
-    var   ir ao estado 60
-    term  ir ao estado 96
-    call  ir ao estado 53
-
-
-Estado 75
-
-   54 arg-list: simple-expr .
-
-    $padrão  reduzir usando a regra 54 (arg-list)
-
-
-Estado 76
-
-   45 call: ID '(' args . ')'
-
-    ')'  deslocar, e ir ao estado 97
-
-
-Estado 77
-
-   51 args: arg-list .
-   53 arg-list: arg-list . ',' simple-expr
-
-    ','  deslocar, e ir ao estado 98
-
-    $padrão  reduzir usando a regra 51 (args)
-
-
-Estado 78
-
-   29 conditional-stmt: IF '(' simple-expr . ')' comp-stmt
-   30                 | IF '(' simple-expr . ')' comp-stmt ELSE comp-stmt
-
-    ')'  deslocar, e ir ao estado 99
-
-
-Estado 79
-
-   31 iteration-stmt: WHILE '(' simple-expr . ')' comp-stmt
-
-    ')'  deslocar, e ir ao estado 100
-
-
-Estado 80
-
-   32 return-stmt: RETURN simple-expr ';' .
-
-    $padrão  reduzir usando a regra 32 (return-stmt)
-
-
-Estado 81
-
-   34 var: ID .
-
-    $padrão  reduzir usando a regra 34 (var)
-
-
-Estado 82
-
-   21 stmt: PRINT '(' QUOTES . string QUOTES ')' ';'
-
-    $padrão  reduzir usando a regra 56 (string)
-
-    string  ir ao estado 101
-
-
-Estado 83
-
-   22 stmt: PRINT '(' var . ')' ';'
-
-    ')'  deslocar, e ir ao estado 102
-
-
-Estado 84
-
-   23 stmt: SCAN '(' var . ')' ';'
-
-    ')'  deslocar, e ir ao estado 103
-
-
-Estado 85
-
-   49 call: STRUPPER '(' args . ')'
-
-    ')'  deslocar, e ir ao estado 104
-
-
-Estado 86
-
-   50 call: STRLOWER '(' args . ')'
-
-    ')'  deslocar, e ir ao estado 105
-
-
-Estado 87
-
-   46 call: STRCONCAT '(' args . ')'
-
-    ')'  deslocar, e ir ao estado 106
-
-
-Estado 88
-
-   47 call: STRCOPY '(' args . ')'
-
-    ')'  deslocar, e ir ao estado 107
-
-
-Estado 89
-
-   48 call: STRINSERT '(' args . ')'
-
-    ')'  deslocar, e ir ao estado 108
-
-
-Estado 90
-
-   55 string: string STR .
-
-    $padrão  reduzir usando a regra 55 (string)
-
-
-Estado 91
-
-   42 term: QUOTES string QUOTES .
-
-    $padrão  reduzir usando a regra 42 (term)
-
-
-Estado 92
-
-   39 term: '(' simple-expr ')' .
-
-    $padrão  reduzir usando a regra 39 (term)
-
-
-Estado 93
-
-   24 expr: var ASSIGN expr .
-
-    $padrão  reduzir usando a regra 24 (expr)
-
-
-Estado 94
-
-   35 op-expr: op-expr OP term .
-
-    $padrão  reduzir usando a regra 35 (op-expr)
-
-
-Estado 95
-
-   26 simple-expr: op-expr RELOP op-expr .
-   35 op-expr: op-expr . OP term
-
-    OP  deslocar, e ir ao estado 72
-
-    $padrão  reduzir usando a regra 26 (simple-expr)
-
-
-Estado 96
-
-   37 op-log: op-log LOG term .
-
-    $padrão  reduzir usando a regra 37 (op-log)
-
-
-Estado 97
-
-   45 call: ID '(' args ')' .
-
-    $padrão  reduzir usando a regra 45 (call)
-
-
-Estado 98
-
-   53 arg-list: arg-list ',' . simple-expr
+   34 op-expr: op-expr OP . term
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -1222,18 +970,262 @@ Estado 98
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    simple-expr  ir ao estado 109
-    var          ir ao estado 60
+    var   ir ao estado 59
+    term  ir ao estado 93
+    call  ir ao estado 52
+
+
+Estado 72
+
+   26 simple-expr: op-expr RELOP . op-expr
+
+    INT        deslocar, e ir ao estado 26
+    FLOAT      deslocar, e ir ao estado 27
+    BOOL       deslocar, e ir ao estado 28
+    ID         deslocar, e ir ao estado 29
+    STRUPPER   deslocar, e ir ao estado 35
+    STRLOWER   deslocar, e ir ao estado 36
+    STRCONCAT  deslocar, e ir ao estado 37
+    STRCOPY    deslocar, e ir ao estado 38
+    STRINSERT  deslocar, e ir ao estado 39
+    QUOTES     deslocar, e ir ao estado 40
+    '('        deslocar, e ir ao estado 41
+
+    var      ir ao estado 59
+    op-expr  ir ao estado 94
+    term     ir ao estado 51
+    call     ir ao estado 52
+
+
+Estado 73
+
+   35 op-expr: op-expr LOG . term
+
+    INT        deslocar, e ir ao estado 26
+    FLOAT      deslocar, e ir ao estado 27
+    BOOL       deslocar, e ir ao estado 28
+    ID         deslocar, e ir ao estado 29
+    STRUPPER   deslocar, e ir ao estado 35
+    STRLOWER   deslocar, e ir ao estado 36
+    STRCONCAT  deslocar, e ir ao estado 37
+    STRCOPY    deslocar, e ir ao estado 38
+    STRINSERT  deslocar, e ir ao estado 39
+    QUOTES     deslocar, e ir ao estado 40
+    '('        deslocar, e ir ao estado 41
+
+    var   ir ao estado 59
+    term  ir ao estado 95
+    call  ir ao estado 52
+
+
+Estado 74
+
+   53 arg-list: simple-expr .
+
+    $padrão  reduzir usando a regra 53 (arg-list)
+
+
+Estado 75
+
+   44 call: ID '(' args . ')'
+
+    ')'  deslocar, e ir ao estado 96
+
+
+Estado 76
+
+   50 args: arg-list .
+   52 arg-list: arg-list . ',' simple-expr
+
+    ','  deslocar, e ir ao estado 97
+
+    $padrão  reduzir usando a regra 50 (args)
+
+
+Estado 77
+
+   28 conditional-stmt: IF '(' simple-expr . ')' comp-stmt
+   29                 | IF '(' simple-expr . ')' comp-stmt ELSE comp-stmt
+
+    ')'  deslocar, e ir ao estado 98
+
+
+Estado 78
+
+   30 iteration-stmt: WHILE '(' simple-expr . ')' comp-stmt
+
+    ')'  deslocar, e ir ao estado 99
+
+
+Estado 79
+
+   31 return-stmt: RETURN simple-expr ';' .
+
+    $padrão  reduzir usando a regra 31 (return-stmt)
+
+
+Estado 80
+
+   33 var: ID .
+
+    $padrão  reduzir usando a regra 33 (var)
+
+
+Estado 81
+
+   21 stmt: PRINT '(' QUOTES . string QUOTES ')' ';'
+
+    $padrão  reduzir usando a regra 55 (string)
+
+    string  ir ao estado 100
+
+
+Estado 82
+
+   22 stmt: PRINT '(' var . ')' ';'
+
+    ')'  deslocar, e ir ao estado 101
+
+
+Estado 83
+
+   23 stmt: SCAN '(' var . ')' ';'
+
+    ')'  deslocar, e ir ao estado 102
+
+
+Estado 84
+
+   48 call: STRUPPER '(' args . ')'
+
+    ')'  deslocar, e ir ao estado 103
+
+
+Estado 85
+
+   49 call: STRLOWER '(' args . ')'
+
+    ')'  deslocar, e ir ao estado 104
+
+
+Estado 86
+
+   45 call: STRCONCAT '(' args . ')'
+
+    ')'  deslocar, e ir ao estado 105
+
+
+Estado 87
+
+   46 call: STRCOPY '(' args . ')'
+
+    ')'  deslocar, e ir ao estado 106
+
+
+Estado 88
+
+   47 call: STRINSERT '(' args . ')'
+
+    ')'  deslocar, e ir ao estado 107
+
+
+Estado 89
+
+   54 string: string STR .
+
+    $padrão  reduzir usando a regra 54 (string)
+
+
+Estado 90
+
+   40 term: QUOTES string QUOTES .
+
+    $padrão  reduzir usando a regra 40 (term)
+
+
+Estado 91
+
+   37 term: '(' op-expr ')' .
+
+    $padrão  reduzir usando a regra 37 (term)
+
+
+Estado 92
+
+   24 expr: var ASSIGN expr .
+
+    $padrão  reduzir usando a regra 24 (expr)
+
+
+Estado 93
+
+   34 op-expr: op-expr OP term .
+
+    $padrão  reduzir usando a regra 34 (op-expr)
+
+
+Estado 94
+
+   26 simple-expr: op-expr RELOP op-expr .
+   34 op-expr: op-expr . OP term
+   35        | op-expr . LOG term
+
+    OP   deslocar, e ir ao estado 71
+    LOG  deslocar, e ir ao estado 73
+
+    $padrão  reduzir usando a regra 26 (simple-expr)
+
+
+Estado 95
+
+   35 op-expr: op-expr LOG term .
+
+    $padrão  reduzir usando a regra 35 (op-expr)
+
+
+Estado 96
+
+   44 call: ID '(' args ')' .
+
+    $padrão  reduzir usando a regra 44 (call)
+
+
+Estado 97
+
+   52 arg-list: arg-list ',' . simple-expr
+
+    INT        deslocar, e ir ao estado 26
+    FLOAT      deslocar, e ir ao estado 27
+    BOOL       deslocar, e ir ao estado 28
+    ID         deslocar, e ir ao estado 29
+    STRUPPER   deslocar, e ir ao estado 35
+    STRLOWER   deslocar, e ir ao estado 36
+    STRCONCAT  deslocar, e ir ao estado 37
+    STRCOPY    deslocar, e ir ao estado 38
+    STRINSERT  deslocar, e ir ao estado 39
+    QUOTES     deslocar, e ir ao estado 40
+    '('        deslocar, e ir ao estado 41
+
+    simple-expr  ir ao estado 108
+    var          ir ao estado 59
     op-expr      ir ao estado 50
-    op-log       ir ao estado 51
-    term         ir ao estado 52
-    call         ir ao estado 53
+    term         ir ao estado 51
+    call         ir ao estado 52
+
+
+Estado 98
+
+   28 conditional-stmt: IF '(' simple-expr ')' . comp-stmt
+   29                 | IF '(' simple-expr ')' . comp-stmt ELSE comp-stmt
+
+    '{'  deslocar, e ir ao estado 18
+
+    comp-stmt  ir ao estado 109
 
 
 Estado 99
 
-   29 conditional-stmt: IF '(' simple-expr ')' . comp-stmt
-   30                 | IF '(' simple-expr ')' . comp-stmt ELSE comp-stmt
+   30 iteration-stmt: WHILE '(' simple-expr ')' . comp-stmt
 
     '{'  deslocar, e ir ao estado 18
 
@@ -1242,140 +1234,131 @@ Estado 99
 
 Estado 100
 
-   31 iteration-stmt: WHILE '(' simple-expr ')' . comp-stmt
+   21 stmt: PRINT '(' QUOTES string . QUOTES ')' ';'
+   54 string: string . STR
 
-    '{'  deslocar, e ir ao estado 18
-
-    comp-stmt  ir ao estado 111
+    STR     deslocar, e ir ao estado 89
+    QUOTES  deslocar, e ir ao estado 111
 
 
 Estado 101
 
-   21 stmt: PRINT '(' QUOTES string . QUOTES ')' ';'
-   55 string: string . STR
+   22 stmt: PRINT '(' var ')' . ';'
 
-    STR     deslocar, e ir ao estado 90
-    QUOTES  deslocar, e ir ao estado 112
+    ';'  deslocar, e ir ao estado 112
 
 
 Estado 102
 
-   22 stmt: PRINT '(' var ')' . ';'
+   23 stmt: SCAN '(' var ')' . ';'
 
     ';'  deslocar, e ir ao estado 113
 
 
 Estado 103
 
-   23 stmt: SCAN '(' var ')' . ';'
+   48 call: STRUPPER '(' args ')' .
 
-    ';'  deslocar, e ir ao estado 114
+    $padrão  reduzir usando a regra 48 (call)
 
 
 Estado 104
 
-   49 call: STRUPPER '(' args ')' .
+   49 call: STRLOWER '(' args ')' .
 
     $padrão  reduzir usando a regra 49 (call)
 
 
 Estado 105
 
-   50 call: STRLOWER '(' args ')' .
+   45 call: STRCONCAT '(' args ')' .
 
-    $padrão  reduzir usando a regra 50 (call)
+    $padrão  reduzir usando a regra 45 (call)
 
 
 Estado 106
 
-   46 call: STRCONCAT '(' args ')' .
+   46 call: STRCOPY '(' args ')' .
 
     $padrão  reduzir usando a regra 46 (call)
 
 
 Estado 107
 
-   47 call: STRCOPY '(' args ')' .
+   47 call: STRINSERT '(' args ')' .
 
     $padrão  reduzir usando a regra 47 (call)
 
 
 Estado 108
 
-   48 call: STRINSERT '(' args ')' .
+   52 arg-list: arg-list ',' simple-expr .
 
-    $padrão  reduzir usando a regra 48 (call)
+    $padrão  reduzir usando a regra 52 (arg-list)
 
 
 Estado 109
 
-   53 arg-list: arg-list ',' simple-expr .
+   28 conditional-stmt: IF '(' simple-expr ')' comp-stmt .
+   29                 | IF '(' simple-expr ')' comp-stmt . ELSE comp-stmt
 
-    $padrão  reduzir usando a regra 53 (arg-list)
+    ELSE  deslocar, e ir ao estado 114
+
+    $padrão  reduzir usando a regra 28 (conditional-stmt)
 
 
 Estado 110
 
-   29 conditional-stmt: IF '(' simple-expr ')' comp-stmt .
-   30                 | IF '(' simple-expr ')' comp-stmt . ELSE comp-stmt
+   30 iteration-stmt: WHILE '(' simple-expr ')' comp-stmt .
 
-    ELSE  deslocar, e ir ao estado 115
-
-    $padrão  reduzir usando a regra 29 (conditional-stmt)
+    $padrão  reduzir usando a regra 30 (iteration-stmt)
 
 
 Estado 111
 
-   31 iteration-stmt: WHILE '(' simple-expr ')' comp-stmt .
+   21 stmt: PRINT '(' QUOTES string QUOTES . ')' ';'
 
-    $padrão  reduzir usando a regra 31 (iteration-stmt)
+    ')'  deslocar, e ir ao estado 115
 
 
 Estado 112
-
-   21 stmt: PRINT '(' QUOTES string QUOTES . ')' ';'
-
-    ')'  deslocar, e ir ao estado 116
-
-
-Estado 113
 
    22 stmt: PRINT '(' var ')' ';' .
 
     $padrão  reduzir usando a regra 22 (stmt)
 
 
-Estado 114
+Estado 113
 
    23 stmt: SCAN '(' var ')' ';' .
 
     $padrão  reduzir usando a regra 23 (stmt)
 
 
-Estado 115
+Estado 114
 
-   30 conditional-stmt: IF '(' simple-expr ')' comp-stmt ELSE . comp-stmt
+   29 conditional-stmt: IF '(' simple-expr ')' comp-stmt ELSE . comp-stmt
 
     '{'  deslocar, e ir ao estado 18
 
-    comp-stmt  ir ao estado 117
+    comp-stmt  ir ao estado 116
+
+
+Estado 115
+
+   21 stmt: PRINT '(' QUOTES string QUOTES ')' . ';'
+
+    ';'  deslocar, e ir ao estado 117
 
 
 Estado 116
 
-   21 stmt: PRINT '(' QUOTES string QUOTES ')' . ';'
+   29 conditional-stmt: IF '(' simple-expr ')' comp-stmt ELSE comp-stmt .
 
-    ';'  deslocar, e ir ao estado 118
+    $padrão  reduzir usando a regra 29 (conditional-stmt)
 
 
 Estado 117
-
-   30 conditional-stmt: IF '(' simple-expr ')' comp-stmt ELSE comp-stmt .
-
-    $padrão  reduzir usando a regra 30 (conditional-stmt)
-
-
-Estado 118
 
    21 stmt: PRINT '(' QUOTES string QUOTES ')' ';' .
 

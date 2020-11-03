@@ -116,7 +116,7 @@ void define_type(node* no);
 %type <no> prog decl-list var-decl func params
 %type <no> stmt-list comp-stmt stmt local-decl
 %type <no> expr simple-expr conditional-stmt iteration-stmt return-stmt
-%type <no> var op-expr op-log term call args arg-list string
+%type <no> var op-expr term call args arg-list string
 
 %%
 
@@ -265,10 +265,6 @@ simple-expr:
         $$ = $1; 
         if (DEBUG_MODE) {printf("simple-expr #2\n");}
     }
-    | op-log { 
-        $$ = $1; 
-        if (DEBUG_MODE) {printf("simple-expr #3\n");}
-    }
 ;
 
 conditional-stmt:
@@ -315,32 +311,27 @@ var:
     }
 ;
 
+// Arrumar na gramática
 op-expr:
     op-expr OP term {
         $$ = insert_node(ARITHIMETIC_EXPRESSION, $1, $3, NULL, $2);
         define_type($$);
         if (DEBUG_MODE) {printf("op-expr #1 %s\n", $2);}
     }
-    | term { 
-        $$ = $1; 
-        if (DEBUG_MODE) {printf("op-expr #2\n");}
-    }
-;
-
-op-log:
-    op-log LOG term { 
+    | op-expr LOG term { 
         $$ = insert_node(LOGICAL_EXPRESSION, $1, $3, NULL, $2); 
         define_type($$);
-        if (DEBUG_MODE) {printf("op-log #1 %s\n", $2);}
+        if (DEBUG_MODE) {printf("op-expr #2 %s\n", $2);}
     }
-    | BOOL { 
-        $$ = insert_node(BOOLEAN, NULL, NULL, "bool", $1); 
-        if (DEBUG_MODE) {printf("op-log #2 %s\n", $1);}
+    | term { 
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("op-expr #3\n");}
     }
 ;
 
+// Arrumar na gramática
 term:
-    '(' simple-expr ')' { 
+    '(' op-expr ')' { 
         $$ = $2; 
         if (DEBUG_MODE) {printf("term #1\n");}
     }
@@ -363,6 +354,10 @@ term:
     | FLOAT { 
         $$ = insert_node(FLOATNUMBER, NULL, NULL, "float", $1); 
         if (DEBUG_MODE) {printf("term #6 %s\n", $1);}
+    }
+    | BOOL { 
+        $$ = insert_node(BOOLEAN, NULL, NULL, "bool", $1); 
+        if (DEBUG_MODE) {printf("term #7 %s\n", $1);}
     }
 ;
 
@@ -737,7 +732,12 @@ void define_type(node* no){
             semantic_error_type_mismatch(type_left, type_right);
         }
     }
-    no->type = type_left;
+    if(no->node_class == RELATIONAL_EXPRESSION){
+        no->type = "bool";
+    }
+    else{
+        no->type = type_left;
+    }
 }
 
 

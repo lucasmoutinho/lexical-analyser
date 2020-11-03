@@ -10,12 +10,12 @@ int i;
 /* Main */
 int main(){
     bool always_true;
-    int result;
+    bool result;
     always_true = true;
     scan(stringTeste);
     i = 0;
     if(always_true){
-        result = stringTeste == strLower(stringTeste);
+        result = stringTeste == lowerCase(stringTeste);
     }
     if (result){
         print(stringTeste);
