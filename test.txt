@@ -1,0 +1,5 @@
+int i;
+int main(){
+    i = 3.0;
+    return 0;
+}

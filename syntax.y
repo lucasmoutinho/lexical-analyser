@@ -34,6 +34,8 @@
 #define STRING 20
 #define FUNCTION_CALL 21
 #define ARGS_LIST 22
+#define INT_TO_FLOAT 23
+#define FLOAT_TO_INT 24
 
 // Extern variables
 int yylex();
@@ -91,6 +93,7 @@ void initialize_global_scope();
 void semantic_error_redeclaration(char* name, char* scope);
 void semantic_error_not_declared(char* name);
 symbol_node* find_symbol(char* name);
+void define_type(node* no);
 
 %}
 
@@ -241,7 +244,8 @@ stmt:
 
 expr:
     var ASSIGN expr { 
-        $$ = insert_node(ASSIGN_EXPRESSION, $1, $3, NULL, $2); 
+        $$ = insert_node(ASSIGN_EXPRESSION, $1, $3, NULL, $2);
+        define_type($$);
         if (DEBUG_MODE) {printf("expr #1 %s\n", $2);} 
     }
     | simple-expr ';' { 
@@ -252,7 +256,8 @@ expr:
 
 simple-expr:
     op-expr RELOP op-expr { 
-        $$ = insert_node(RELATIONAL_EXPRESSION, $1, $3, NULL, $2); 
+        $$ = insert_node(RELATIONAL_EXPRESSION, $1, $3, NULL, $2);
+        define_type($$);
         if (DEBUG_MODE) {printf("simple-expr #1 %s\n", $2);}
     }
     | op-expr { 
@@ -287,10 +292,12 @@ iteration-stmt:
 return-stmt:
     RETURN simple-expr ';' { 
         $$ = insert_node(RETURN_STATEMENT, NULL, $2, NULL, $1); 
+        define_type($$);
         if (DEBUG_MODE) {printf("return-stmt #1 %s\n", $1);}
     }
     | RETURN ';' { 
         $$ = insert_node(RETURN_STATEMENT, NULL, NULL, NULL, $1); 
+        define_type($$);
         if (DEBUG_MODE) {printf("return-stmt #2 %s\n", $1);}
     }
 ;
@@ -308,8 +315,9 @@ var:
 ;
 
 op-expr:
-    op-expr OP term { 
-        $$ = insert_node(ARITHIMETIC_EXPRESSION, $1, $3, NULL, $2); 
+    op-expr OP term {
+        $$ = insert_node(ARITHIMETIC_EXPRESSION, $1, $3, NULL, $2);
+        define_type($$);
         if (DEBUG_MODE) {printf("op-expr #1 %s\n", $2);}
     }
     | term { 
@@ -321,10 +329,11 @@ op-expr:
 op-log:
     op-log LOG term { 
         $$ = insert_node(LOGICAL_EXPRESSION, $1, $3, NULL, $2); 
+        define_type($$);
         if (DEBUG_MODE) {printf("op-log #1 %s\n", $2);}
     }
     | BOOL { 
-        $$ = insert_node(BOOLEAN, NULL, NULL, NULL, $1); 
+        $$ = insert_node(BOOLEAN, NULL, NULL, "bool", $1); 
         if (DEBUG_MODE) {printf("op-log #2 %s\n", $1);}
     }
 ;
@@ -503,6 +512,12 @@ void print_class(int node_class){
         case ARGS_LIST:
             printf("ARGS_LIST");
         break;
+        case INT_TO_FLOAT:
+            printf("INT_TO_FLOAT");
+        break;
+        case FLOAT_TO_INT:
+            printf("FLOAT_TO_INT");
+        break;
     }
     printf(" | ");
 }
@@ -668,20 +683,61 @@ symbol_node* find_symbol(char* name) {
     return s;
 }
 
-// // Erro semantico de tipo incompatível
-// void semantic_error_type_mismatch(char* type_left, char* name_left, char* type_right, char* name_right){
-//     char *error = (char *)malloc(
-//         (strlen(name_left) + strlen(type_left) + strlen(name_right) + strlen(type_right) + 1 + 55) * sizeof(char)
-//     ); // +1 for the null-terminator and 55 for semantic error message
-//     sprintf(error, "semantic error, type mismatch between %s(%s) and %s(%s)", type_left, name_left, type_right, name_right);
-//     yyerror(error);
-//     free(error);
-// }
+// Erro semantico de tipo incompatível
+void semantic_error_type_mismatch(char* type_left, char* name_left, char* type_right, char* name_right){
+    char *error = (char *)malloc(
+        (strlen(name_left) + strlen(type_left) + strlen(name_right) + strlen(type_right) + 1 + 55) * sizeof(char)
+    ); // +1 for the null-terminator and 55 for semantic error message
+    sprintf(error, "semantic error, type mismatch between %s(%s) and %s(%s)", type_left, name_left, type_right, name_right);
+    yyerror(error);
+    free(error);
+}
 
-// // Checa se ocorreu erro semantico de tipos incompatíveis
-// void check_semantic_error_type_mismatch(char* name_left, char* name_right){
+// Adiciona nó de conversão implícita na árvore.
+// 
+void add_implicit_conversion(node *no){
+    node* conversion_node;
+    node* aux;
+    if(strcmp(no->left->type, "int") == 0 && strcmp(no->right->type, "float") == 0){
+        if(no->node_class == ASSIGN_EXPRESSION){
+            conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
+            no->right = conversion_node;
+        }
+        else{
+            conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+            no->left = conversion_node;
+        }
+    }
+    else{
+        conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
+        no->right = conversion_node;
+    }
+}
 
-// }
+// Define tipo para nó da árvore (como para expressões), checando lado esquerdo e direito
+void define_type(node* no){
+    char* type_left = NULL;
+    char* type_right = NULL;
+    if(no->left != NULL){
+        type_left = no->left->type;
+    }
+    if(no->right != NULL){
+        type_right = no->right->type;
+    }
+    if(type_left != NULL && type_right != NULL && strcmp(type_left, type_right) != 0){ 
+        if( // type mismatch -- implicit conversion
+            (strcmp(type_left, "int") == 0 && strcmp(type_right, "float") == 0) || 
+            (strcmp(type_left, "float") == 0 && strcmp(type_right, "int") == 0)
+        ){
+            add_implicit_conversion(no);
+        }
+        else{ // type mismatch -- no implicit conversion
+            semantic_error_type_mismatch(type_left, no->left->nome, type_right, no->right->nome);
+        }
+    }
+    no->type = type_left;
+}
+
 
 int main(int argc, char **argv) {
     ++argv, --argc;
