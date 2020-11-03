@@ -99,6 +99,8 @@ void semantic_error_return_type(char* return_type, char* type);
 void check_semantic_error_return_type(char* return_type);
 void semantic_error_relop_type(char* value);
 void check_semantic_error_relop_type(node* no);
+void semantic_error_op_type(char* value);
+void check_semantic_error_op_type(node* no);
 
 %}
 
@@ -323,6 +325,7 @@ op-expr:
     op-expr OP term {
         $$ = insert_node(ARITHIMETIC_EXPRESSION, $1, $3, NULL, $2);
         define_type($$);
+        check_semantic_error_op_type($$);
         if (DEBUG_MODE) {printf("op-expr #1 %s\n", $2);}
     }
     | op-expr LOG term { 
@@ -780,6 +783,7 @@ void semantic_error_relop_type(char* value){
     free(error);
 }
 
+// Checa erro semantico de relop com booleans
 void check_semantic_error_relop_type(node* no){
     char* type_left = NULL;
     char* type_right = NULL;
@@ -793,6 +797,33 @@ void check_semantic_error_relop_type(node* no){
         (strcmp(no->value, "==") != 0) &&
         (strcmp(type_left, "bool") == 0 || strcmp(type_right, "bool") == 0)){
         semantic_error_relop_type(no->value);
+    }
+}
+
+// Erro semantico de op com strings
+void semantic_error_op_type(char* value){
+    char *error = (char *)malloc(
+        (strlen(value) + 1 + 56) * sizeof(char)
+    ); // +1 for the null-terminator and 56 for semantic error message
+    sprintf(error, "semantic error, unexpected type string for operator (%s)", value);
+    yyerror(error);
+    free(error);
+}
+
+// Checa erro semantico de op com strings
+void check_semantic_error_op_type(node* no){
+    char* type_left = NULL;
+    char* type_right = NULL;
+    if(no->left != NULL){
+        type_left = no->left->type;
+    }
+    if(no->right != NULL){
+        type_right = no->right->type;
+    }
+    if(// op with strings error
+        (strcmp(no->value, "+") != 0) &&
+        (strcmp(type_left, "string") == 0 || strcmp(type_right, "string") == 0)){
+        semantic_error_op_type(no->value);
     }
 }
 
