@@ -3,3 +3,9 @@ int main(){
     i = 3.0;
     return 0;
 }
+
+/*
+nao permitir:
+OPERADORES RELACIONAIS com booleans
+string não pode com -, * e /
+*/

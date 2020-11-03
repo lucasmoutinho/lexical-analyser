@@ -158,9 +158,11 @@ symbol_node* find_symbol(char* name);
 void define_type(node* no);
 void semantic_error_return_type(char* return_type, char* type);
 void check_semantic_error_return_type(char* return_type);
+void semantic_error_relop_type(char* value);
+void check_semantic_error_relop_type(node* no);
 
 
-#line 164 "syntax.tab.c" /* yacc.c:339  */
+#line 166 "syntax.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -225,12 +227,12 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 103 "syntax.y" /* yacc.c:355  */
+#line 105 "syntax.y" /* yacc.c:355  */
 
     char* str;
     struct node* no;
 
-#line 234 "syntax.tab.c" /* yacc.c:355  */
+#line 236 "syntax.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -261,7 +263,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 265 "syntax.tab.c" /* yacc.c:358  */
+#line 267 "syntax.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -505,7 +507,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  7
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   127
+#define YYLAST   124
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  31
@@ -562,12 +564,12 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   126,   126,   133,   137,   141,   145,   152,   160,   160,
-     172,   177,   182,   189,   196,   201,   208,   212,   219,   223,
-     227,   231,   235,   239,   243,   250,   255,   262,   267,   274,
-     278,   286,   293,   299,   307,   320,   325,   330,   338,   342,
-     346,   350,   354,   358,   362,   369,   378,   382,   386,   390,
-     394,   401,   405,   412,   416,   423,   427
+       0,   128,   128,   135,   139,   143,   147,   154,   162,   162,
+     174,   179,   184,   191,   198,   203,   210,   214,   221,   225,
+     229,   233,   237,   241,   245,   252,   257,   264,   270,   277,
+     281,   289,   296,   302,   310,   323,   328,   333,   341,   345,
+     349,   353,   357,   361,   365,   372,   381,   385,   389,   393,
+     397,   404,   408,   415,   419,   426,   430
 };
 #endif
 
@@ -599,10 +601,10 @@ static const yytype_uint16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF -96
+#define YYPACT_NINF -95
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-96)))
+  (!!((Yystate) == (-95)))
 
 #define YYTABLE_NINF -1
 
@@ -613,18 +615,18 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      -1,     7,    50,    -1,   -96,   -96,    11,   -96,   -96,   -96,
-     -96,    25,    60,    63,    16,   -96,    43,    67,   -96,   -96,
-      80,    68,   -96,    81,     9,    65,   -96,   -96,   -96,    66,
-      69,    70,    37,    71,    72,    73,    74,    75,    76,    77,
-     -96,    61,   -96,   -96,   -96,    79,   -96,   -96,   -96,    84,
-      36,   -96,   -96,   -96,    61,    61,    61,   -96,    82,   -96,
-      41,    83,    61,    61,    61,    61,    61,    10,   -17,   -96,
-      61,    61,    61,    61,   -96,    85,    78,    86,    87,   -96,
-     -96,   -96,    88,    89,    90,    91,    92,    93,    94,   -96,
-     -96,   -96,   -96,   -96,   -13,   -96,   -96,    61,    43,    43,
-      28,    97,    98,   -96,   -96,   -96,   -96,   -96,   -96,    99,
-     -96,   100,   -96,   -96,    43,   101,   -96,   -96
+       5,    -5,    33,     5,   -95,   -95,    16,   -95,   -95,   -95,
+     -95,     8,    35,    45,   -21,   -95,    25,    54,   -95,   -95,
+      73,    76,   -95,    78,    10,    62,   -95,   -95,   -95,    58,
+      63,    64,    40,    65,    66,    67,    68,    69,    70,    71,
+     -95,    59,   -95,   -95,   -95,    74,   -95,   -95,   -95,    77,
+     -13,   -95,   -95,   -95,    59,    59,    59,   -95,    75,   -95,
+      31,    80,    59,    59,    59,    59,    59,    -4,    79,   -95,
+      59,    59,    59,    59,   -95,    81,    82,    84,    85,   -95,
+     -95,   -95,    86,    87,    88,    89,    90,    91,    92,   -95,
+     -95,   -95,   -95,   -95,    28,   -95,   -95,    59,    25,    25,
+      29,    95,    96,   -95,   -95,   -95,   -95,   -95,   -95,    93,
+     -95,    97,   -95,   -95,    25,    98,   -95,   -95
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -649,9 +651,9 @@ static const yytype_uint8 yydefact[] =
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -96,   -96,   -96,   105,   107,   -96,   -96,   -95,   -96,   -96,
-     -96,    23,   -24,   -96,   -96,   -96,   -23,   -39,    -3,   -96,
-      20,   -96,    13
+     -95,   -95,   -95,    99,   101,   -95,   -95,   -94,   -95,   -95,
+     -95,    37,   -24,   -95,   -95,   -95,   -23,    50,     9,   -95,
+       6,   -95,    20
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
@@ -667,36 +669,36 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      45,    49,    68,   109,   110,    71,     1,    73,    58,    71,
-      91,    73,    26,    27,    28,     6,    89,    29,    30,   116,
-      31,    32,    33,    34,    35,    36,    37,    38,    39,    40,
-      90,    77,    78,    94,    89,    41,    10,    82,    83,    42,
-      26,    27,    28,    16,    17,    29,    45,    49,   111,    80,
-       7,    12,    35,    36,    37,    38,    39,    40,    71,    72,
-      73,    81,    57,    41,    26,    27,    28,    13,    93,    29,
-      95,    15,    18,   108,    20,    23,    35,    36,    37,    38,
-      39,    40,    84,    85,    86,    87,    88,    41,    22,    25,
-      53,    80,    54,    92,   100,    55,    56,    60,    61,    62,
-      63,    64,    65,    66,    69,    70,    97,    79,     8,   114,
-       9,     0,    96,    98,    99,   101,   102,   103,   104,   105,
-     106,   107,   112,   113,     0,     0,   117,   115
+      45,    49,    89,     6,   109,   110,    16,    17,    58,    71,
+      72,    73,     1,    26,    27,    28,    90,    68,    29,    30,
+     116,    31,    32,    33,    34,    35,    36,    37,    38,    39,
+      40,    77,    78,     7,    12,    89,    41,    82,    83,    80,
+      42,    10,    13,    26,    27,    28,    45,    49,    29,   111,
+      71,    81,    73,    15,    18,    35,    36,    37,    38,    39,
+      40,    20,    26,    27,    28,    57,    41,    29,    84,    85,
+      86,    87,    88,   108,    35,    36,    37,    38,    39,    40,
+      93,    22,    95,    23,    54,    41,    25,    53,    80,    55,
+      56,    60,    61,    62,    63,    64,    65,    66,    70,    69,
+      79,   100,     8,   114,     9,     0,    91,    92,    96,     0,
+      97,    98,    99,   101,   102,   103,   104,   105,   106,   107,
+     112,   113,    94,   117,   115
 };
 
 static const yytype_int8 yycheck[] =
 {
-      24,    24,    41,    98,    99,    22,     7,    24,    32,    22,
-      27,    24,     3,     4,     5,     8,     6,     8,     9,   114,
-      11,    12,    13,    14,    15,    16,    17,    18,    19,    20,
-      20,    55,    56,    72,     6,    26,    25,    60,    61,    30,
-       3,     4,     5,    27,    28,     8,    70,    70,    20,     8,
-       0,    26,    15,    16,    17,    18,    19,    20,    22,    23,
-      24,    20,    25,    26,     3,     4,     5,     7,    71,     8,
-      73,     8,    29,    97,     7,     7,    15,    16,    17,    18,
-      19,    20,    62,    63,    64,    65,    66,    26,     8,     8,
-      25,     8,    26,    70,    81,    26,    26,    26,    26,    26,
-      26,    26,    26,    26,    25,    21,    28,    25,     3,    10,
-       3,    -1,    27,    27,    27,    27,    27,    27,    27,    27,
-      27,    27,    25,    25,    -1,    -1,    25,    27
+      24,    24,     6,     8,    98,    99,    27,    28,    32,    22,
+      23,    24,     7,     3,     4,     5,    20,    41,     8,     9,
+     114,    11,    12,    13,    14,    15,    16,    17,    18,    19,
+      20,    55,    56,     0,    26,     6,    26,    60,    61,     8,
+      30,    25,     7,     3,     4,     5,    70,    70,     8,    20,
+      22,    20,    24,     8,    29,    15,    16,    17,    18,    19,
+      20,     7,     3,     4,     5,    25,    26,     8,    62,    63,
+      64,    65,    66,    97,    15,    16,    17,    18,    19,    20,
+      71,     8,    73,     7,    26,    26,     8,    25,     8,    26,
+      26,    26,    26,    26,    26,    26,    26,    26,    21,    25,
+      25,    81,     3,    10,     3,    -1,    27,    70,    27,    -1,
+      28,    27,    27,    27,    27,    27,    27,    27,    27,    27,
+      25,    25,    72,    25,    27
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -709,7 +711,7 @@ static const yytype_uint8 yystos[] =
        9,    11,    12,    13,    14,    15,    16,    17,    18,    19,
       20,    26,    30,    41,    42,    43,    44,    45,    46,    47,
       48,    49,    50,    25,    26,    26,    26,    25,    43,    47,
-      26,    26,    26,    26,    26,    26,    26,    53,    48,    25,
+      26,    26,    26,    26,    26,    26,    26,    53,    43,    25,
       21,    22,    23,    24,    43,    51,    52,    43,    43,    25,
        8,    20,    47,    47,    51,    51,    51,    51,    51,     6,
       20,    27,    42,    49,    48,    49,    27,    28,    27,    27,
@@ -1506,306 +1508,307 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 126 "syntax.y" /* yacc.c:1646  */
+#line 128 "syntax.y" /* yacc.c:1646  */
     { 
         parser_tree = (yyvsp[0].no);
         if (DEBUG_MODE) {printf("prog\n");}
     }
-#line 1515 "syntax.tab.c" /* yacc.c:1646  */
+#line 1517 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 133 "syntax.y" /* yacc.c:1646  */
+#line 135 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(DECLARATION_LIST, (yyvsp[-1].no), (yyvsp[0].no), NULL, NULL);
         if (DEBUG_MODE) {printf("decl-list #1\n");} 
     }
-#line 1524 "syntax.tab.c" /* yacc.c:1646  */
+#line 1526 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 4:
-#line 137 "syntax.y" /* yacc.c:1646  */
+#line 139 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no);
         if (DEBUG_MODE) {printf("decl-list #2\n");}
     }
-#line 1533 "syntax.tab.c" /* yacc.c:1646  */
+#line 1535 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 5:
-#line 141 "syntax.y" /* yacc.c:1646  */
+#line 143 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(DECLARATION_LIST, (yyvsp[-1].no), (yyvsp[0].no), NULL, NULL);
         if (DEBUG_MODE) {printf("decl-list #3\n");} 
     }
-#line 1542 "syntax.tab.c" /* yacc.c:1646  */
+#line 1544 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 6:
-#line 145 "syntax.y" /* yacc.c:1646  */
+#line 147 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no);
         if (DEBUG_MODE) {printf("decl-list #4\n");}
     }
-#line 1551 "syntax.tab.c" /* yacc.c:1646  */
+#line 1553 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
-#line 152 "syntax.y" /* yacc.c:1646  */
+#line 154 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(VARIABLE_DECLARATION, NULL, NULL, (yyvsp[-2].str), (yyvsp[-1].str));
         add_symbol((yyvsp[-1].str), (yyvsp[-2].str), 'V');
         if (DEBUG_MODE) {printf("var-decl %s %s\n", (yyvsp[-2].str), (yyvsp[-1].str));}
     }
-#line 1561 "syntax.tab.c" /* yacc.c:1646  */
+#line 1563 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 8:
-#line 160 "syntax.y" /* yacc.c:1646  */
+#line 162 "syntax.y" /* yacc.c:1646  */
     { 
         add_symbol((yyvsp[0].str), (yyvsp[-1].str), 'F');
         push_stack((yyvsp[0].str), (yyvsp[-1].str));
     }
-#line 1570 "syntax.tab.c" /* yacc.c:1646  */
+#line 1572 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 164 "syntax.y" /* yacc.c:1646  */
+#line 166 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(FUNCTION, (yyvsp[-2].no), (yyvsp[0].no), (yyvsp[-6].str), (yyvsp[-5].str));
         pop_stack();
         if (DEBUG_MODE) {printf("func %s %s\n", (yyvsp[-6].str), (yyvsp[-5].str));}
     }
-#line 1580 "syntax.tab.c" /* yacc.c:1646  */
+#line 1582 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
-#line 172 "syntax.y" /* yacc.c:1646  */
+#line 174 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(PARAMETER, (yyvsp[-3].no), NULL, (yyvsp[-1].str), (yyvsp[0].str));
         add_symbol((yyvsp[0].str), (yyvsp[-1].str), 'P');
         if (DEBUG_MODE) {printf("params #1 %s %s\n", (yyvsp[-1].str), (yyvsp[0].str));}
     }
-#line 1590 "syntax.tab.c" /* yacc.c:1646  */
+#line 1592 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 11:
-#line 177 "syntax.y" /* yacc.c:1646  */
+#line 179 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(PARAMETER, NULL, NULL, (yyvsp[-1].str), (yyvsp[0].str));
         add_symbol((yyvsp[0].str), (yyvsp[-1].str), 'P');
         if (DEBUG_MODE) {printf("params #2 %s %s\n", (yyvsp[-1].str), (yyvsp[0].str));}
     }
-#line 1600 "syntax.tab.c" /* yacc.c:1646  */
+#line 1602 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 12:
-#line 182 "syntax.y" /* yacc.c:1646  */
+#line 184 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = NULL;
         if (DEBUG_MODE) {printf("params #3\n");}
     }
-#line 1609 "syntax.tab.c" /* yacc.c:1646  */
+#line 1611 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
-#line 189 "syntax.y" /* yacc.c:1646  */
+#line 191 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(COMPOUND_STATEMENT, (yyvsp[-2].no), (yyvsp[-1].no), NULL, NULL);
         if (DEBUG_MODE) {printf("comp-stmt\n");}
     }
-#line 1618 "syntax.tab.c" /* yacc.c:1646  */
+#line 1620 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 196 "syntax.y" /* yacc.c:1646  */
+#line 198 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(VARIABLE_DECLARATION, (yyvsp[-3].no), NULL, (yyvsp[-2].str), (yyvsp[-1].str));
         add_symbol((yyvsp[-1].str), (yyvsp[-2].str), 'V');
         if (DEBUG_MODE) {printf("local-decl #1 %s %s\n", (yyvsp[-2].str), (yyvsp[-1].str));}
     }
-#line 1628 "syntax.tab.c" /* yacc.c:1646  */
+#line 1630 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 201 "syntax.y" /* yacc.c:1646  */
+#line 203 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = NULL; 
         if (DEBUG_MODE) {printf("local-decl #2\n");}
     }
-#line 1637 "syntax.tab.c" /* yacc.c:1646  */
+#line 1639 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 208 "syntax.y" /* yacc.c:1646  */
+#line 210 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(STATEMENT_LIST, (yyvsp[-1].no), (yyvsp[0].no), NULL, NULL);
         if (DEBUG_MODE) {printf("stmt-list #1\n");}
     }
-#line 1646 "syntax.tab.c" /* yacc.c:1646  */
+#line 1648 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 212 "syntax.y" /* yacc.c:1646  */
+#line 214 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = NULL; 
         if (DEBUG_MODE) {printf("stmt-list #2\n");} 
     }
-#line 1655 "syntax.tab.c" /* yacc.c:1646  */
+#line 1657 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 219 "syntax.y" /* yacc.c:1646  */
+#line 221 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("stmt #1\n");} 
     }
-#line 1664 "syntax.tab.c" /* yacc.c:1646  */
+#line 1666 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 223 "syntax.y" /* yacc.c:1646  */
+#line 225 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("stmt #2\n");} 
     }
-#line 1673 "syntax.tab.c" /* yacc.c:1646  */
+#line 1675 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 227 "syntax.y" /* yacc.c:1646  */
+#line 229 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("stmt #3\n");}
     }
-#line 1682 "syntax.tab.c" /* yacc.c:1646  */
+#line 1684 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 231 "syntax.y" /* yacc.c:1646  */
+#line 233 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("stmt #4\n");}
     }
-#line 1691 "syntax.tab.c" /* yacc.c:1646  */
+#line 1693 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 235 "syntax.y" /* yacc.c:1646  */
+#line 237 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(PRINT_STATEMENT, (yyvsp[-3].no), NULL, "void", (yyvsp[-6].str));
         if (DEBUG_MODE) {printf("stmt #4 %s\n", (yyvsp[-6].str));}
     }
-#line 1700 "syntax.tab.c" /* yacc.c:1646  */
+#line 1702 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 239 "syntax.y" /* yacc.c:1646  */
+#line 241 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(PRINT_STATEMENT, (yyvsp[-2].no), NULL, "void", (yyvsp[-4].str)); 
         if (DEBUG_MODE) {printf("stmt #5 %s\n", (yyvsp[-4].str));} 
     }
-#line 1709 "syntax.tab.c" /* yacc.c:1646  */
+#line 1711 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 243 "syntax.y" /* yacc.c:1646  */
+#line 245 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(SCAN_STATEMENT, (yyvsp[-2].no), NULL, "void", (yyvsp[-4].str)); 
         if (DEBUG_MODE) {printf("stmt #6 %s\n", (yyvsp[-4].str));}
     }
-#line 1718 "syntax.tab.c" /* yacc.c:1646  */
+#line 1720 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 250 "syntax.y" /* yacc.c:1646  */
+#line 252 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(ASSIGN_EXPRESSION, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str));
         define_type((yyval.no));
         if (DEBUG_MODE) {printf("expr #1 %s\n", (yyvsp[-1].str));} 
     }
-#line 1728 "syntax.tab.c" /* yacc.c:1646  */
+#line 1730 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 255 "syntax.y" /* yacc.c:1646  */
+#line 257 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[-1].no); 
         if (DEBUG_MODE) {printf("expr #2\n");}
     }
-#line 1737 "syntax.tab.c" /* yacc.c:1646  */
+#line 1739 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 262 "syntax.y" /* yacc.c:1646  */
+#line 264 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(RELATIONAL_EXPRESSION, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str));
         define_type((yyval.no));
+        check_semantic_error_relop_type((yyval.no));
         if (DEBUG_MODE) {printf("simple-expr #1 %s\n", (yyvsp[-1].str));}
     }
-#line 1747 "syntax.tab.c" /* yacc.c:1646  */
+#line 1750 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 267 "syntax.y" /* yacc.c:1646  */
+#line 270 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("simple-expr #2\n");}
     }
-#line 1756 "syntax.tab.c" /* yacc.c:1646  */
+#line 1759 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 274 "syntax.y" /* yacc.c:1646  */
+#line 277 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(CONDITIONAL_STATEMENT, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-4].str));
         if (DEBUG_MODE) {printf("conditional-stmt #1 %s\n", (yyvsp[-4].str));}
     }
-#line 1765 "syntax.tab.c" /* yacc.c:1646  */
+#line 1768 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 278 "syntax.y" /* yacc.c:1646  */
+#line 281 "syntax.y" /* yacc.c:1646  */
     {
         node* aux_node = insert_node(CONDITIONAL_STATEMENT, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str));
         (yyval.no) = insert_node(CONDITIONAL_STATEMENT, (yyvsp[-4].no), aux_node, NULL, (yyvsp[-6].str));
         if (DEBUG_MODE) {printf("conditional-stmt #2 %s\n", (yyvsp[-6].str));}
     }
-#line 1775 "syntax.tab.c" /* yacc.c:1646  */
+#line 1778 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 286 "syntax.y" /* yacc.c:1646  */
+#line 289 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(ITERATION_STATEMENT, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-4].str));
         if (DEBUG_MODE) {printf("iteration-stmt %s\n", (yyvsp[-4].str));}
     }
-#line 1784 "syntax.tab.c" /* yacc.c:1646  */
+#line 1787 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
-#line 293 "syntax.y" /* yacc.c:1646  */
+#line 296 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(RETURN_STATEMENT, (yyvsp[-1].no), NULL, NULL, (yyvsp[-2].str)); 
         define_type((yyval.no));
         check_semantic_error_return_type((yyval.no)->type);
         if (DEBUG_MODE) {printf("return-stmt #1 %s\n", (yyvsp[-2].str));}
     }
-#line 1795 "syntax.tab.c" /* yacc.c:1646  */
+#line 1798 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
-#line 299 "syntax.y" /* yacc.c:1646  */
+#line 302 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(RETURN_STATEMENT, NULL, NULL, "void", (yyvsp[-1].str)); 
         check_semantic_error_return_type((yyval.no)->type);
         if (DEBUG_MODE) {printf("return-stmt #2 %s\n", (yyvsp[-1].str));}
     }
-#line 1805 "syntax.tab.c" /* yacc.c:1646  */
+#line 1808 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
-#line 307 "syntax.y" /* yacc.c:1646  */
+#line 310 "syntax.y" /* yacc.c:1646  */
     { 
         symbol_node* s = find_symbol((yyvsp[0].str));
         char* type = NULL;
@@ -1815,103 +1818,103 @@ yyreduce:
         (yyval.no) = insert_node(VARIABLE, NULL, NULL, type, (yyvsp[0].str));
         if (DEBUG_MODE) {printf("var %s\n", (yyvsp[0].str));}
     }
-#line 1819 "syntax.tab.c" /* yacc.c:1646  */
+#line 1822 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
-#line 320 "syntax.y" /* yacc.c:1646  */
+#line 323 "syntax.y" /* yacc.c:1646  */
     {
         (yyval.no) = insert_node(ARITHIMETIC_EXPRESSION, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str));
         define_type((yyval.no));
         if (DEBUG_MODE) {printf("op-expr #1 %s\n", (yyvsp[-1].str));}
     }
-#line 1829 "syntax.tab.c" /* yacc.c:1646  */
+#line 1832 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
-#line 325 "syntax.y" /* yacc.c:1646  */
+#line 328 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(LOGICAL_EXPRESSION, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str)); 
         define_type((yyval.no));
         if (DEBUG_MODE) {printf("op-expr #2 %s\n", (yyvsp[-1].str));}
     }
-#line 1839 "syntax.tab.c" /* yacc.c:1646  */
+#line 1842 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 330 "syntax.y" /* yacc.c:1646  */
+#line 333 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("op-expr #3\n");}
     }
-#line 1848 "syntax.tab.c" /* yacc.c:1646  */
+#line 1851 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 38:
-#line 338 "syntax.y" /* yacc.c:1646  */
+#line 341 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[-1].no); 
         if (DEBUG_MODE) {printf("term #1\n");}
     }
-#line 1857 "syntax.tab.c" /* yacc.c:1646  */
+#line 1860 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 39:
-#line 342 "syntax.y" /* yacc.c:1646  */
+#line 345 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("term #2\n");}
     }
-#line 1866 "syntax.tab.c" /* yacc.c:1646  */
+#line 1869 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 40:
-#line 346 "syntax.y" /* yacc.c:1646  */
+#line 349 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("term #3\n");}
     }
-#line 1875 "syntax.tab.c" /* yacc.c:1646  */
+#line 1878 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 41:
-#line 350 "syntax.y" /* yacc.c:1646  */
+#line 353 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[-1].no); 
         if (DEBUG_MODE) {printf("term #4\n");}
     }
-#line 1884 "syntax.tab.c" /* yacc.c:1646  */
+#line 1887 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 354 "syntax.y" /* yacc.c:1646  */
+#line 357 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(INTEGER, NULL, NULL, "int", (yyvsp[0].str)); 
         if (DEBUG_MODE) {printf("term #5 %s\n", (yyvsp[0].str));}
     }
-#line 1893 "syntax.tab.c" /* yacc.c:1646  */
+#line 1896 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 358 "syntax.y" /* yacc.c:1646  */
+#line 361 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(FLOATNUMBER, NULL, NULL, "float", (yyvsp[0].str)); 
         if (DEBUG_MODE) {printf("term #6 %s\n", (yyvsp[0].str));}
     }
-#line 1902 "syntax.tab.c" /* yacc.c:1646  */
+#line 1905 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
-#line 362 "syntax.y" /* yacc.c:1646  */
+#line 365 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(BOOLEAN, NULL, NULL, "bool", (yyvsp[0].str)); 
         if (DEBUG_MODE) {printf("term #7 %s\n", (yyvsp[0].str));}
     }
-#line 1911 "syntax.tab.c" /* yacc.c:1646  */
+#line 1914 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
-#line 369 "syntax.y" /* yacc.c:1646  */
+#line 372 "syntax.y" /* yacc.c:1646  */
     {
         symbol_node* s = find_symbol((yyvsp[-3].str));
         char* type = NULL;
@@ -1921,110 +1924,110 @@ yyreduce:
         (yyval.no) = insert_node(FUNCTION_CALL, (yyvsp[-1].no), NULL, type, (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #1 %s\n", (yyvsp[-3].str));}
     }
-#line 1925 "syntax.tab.c" /* yacc.c:1646  */
+#line 1928 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 46:
-#line 378 "syntax.y" /* yacc.c:1646  */
+#line 381 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(FUNCTION_CALL, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str)); 
         if (DEBUG_MODE) {printf("call #2 %s\n", (yyvsp[-3].str));}
     }
-#line 1934 "syntax.tab.c" /* yacc.c:1646  */
+#line 1937 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 382 "syntax.y" /* yacc.c:1646  */
+#line 385 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(FUNCTION_CALL, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #4 %s\n", (yyvsp[-3].str));}
     }
-#line 1943 "syntax.tab.c" /* yacc.c:1646  */
+#line 1946 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 386 "syntax.y" /* yacc.c:1646  */
+#line 389 "syntax.y" /* yacc.c:1646  */
     {  
         (yyval.no) = insert_node(FUNCTION_CALL, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #5 %s\n", (yyvsp[-3].str));}
     }
-#line 1952 "syntax.tab.c" /* yacc.c:1646  */
+#line 1955 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 390 "syntax.y" /* yacc.c:1646  */
+#line 393 "syntax.y" /* yacc.c:1646  */
     {  
         (yyval.no) = insert_node(FUNCTION_CALL, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #6 %s\n", (yyvsp[-3].str));}
     }
-#line 1961 "syntax.tab.c" /* yacc.c:1646  */
+#line 1964 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 50:
-#line 394 "syntax.y" /* yacc.c:1646  */
+#line 397 "syntax.y" /* yacc.c:1646  */
     {  
         (yyval.no) = insert_node(FUNCTION_CALL, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #7 %s\n", (yyvsp[-3].str));}
     }
-#line 1970 "syntax.tab.c" /* yacc.c:1646  */
+#line 1973 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
-#line 401 "syntax.y" /* yacc.c:1646  */
+#line 404 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no);
         if (DEBUG_MODE) {printf("args #1\n");}
     }
-#line 1979 "syntax.tab.c" /* yacc.c:1646  */
+#line 1982 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 52:
-#line 405 "syntax.y" /* yacc.c:1646  */
+#line 408 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = NULL;
         if (DEBUG_MODE) {printf("args #2\n");}
     }
-#line 1988 "syntax.tab.c" /* yacc.c:1646  */
+#line 1991 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 53:
-#line 412 "syntax.y" /* yacc.c:1646  */
+#line 415 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(ARGS_LIST, (yyvsp[-2].no), (yyvsp[0].no), NULL, NULL); 
         if (DEBUG_MODE) {printf("args-list #1\n");}
     }
-#line 1997 "syntax.tab.c" /* yacc.c:1646  */
+#line 2000 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 54:
-#line 416 "syntax.y" /* yacc.c:1646  */
+#line 419 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("args-list #2\n");}
     }
-#line 2006 "syntax.tab.c" /* yacc.c:1646  */
+#line 2009 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 55:
-#line 423 "syntax.y" /* yacc.c:1646  */
+#line 426 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = insert_node(STRING, (yyvsp[-1].no), NULL, "string", (yyvsp[0].str)); 
         if (DEBUG_MODE) {printf("string #1 %s\n", (yyvsp[0].str));}
     }
-#line 2015 "syntax.tab.c" /* yacc.c:1646  */
+#line 2018 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
   case 56:
-#line 427 "syntax.y" /* yacc.c:1646  */
+#line 430 "syntax.y" /* yacc.c:1646  */
     { 
         (yyval.no) = NULL; 
         if (DEBUG_MODE) {printf("string #2\n");}
     }
-#line 2024 "syntax.tab.c" /* yacc.c:1646  */
+#line 2027 "syntax.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 2028 "syntax.tab.c" /* yacc.c:1646  */
+#line 2031 "syntax.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2259,7 +2262,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 431 "syntax.y" /* yacc.c:1906  */
+#line 434 "syntax.y" /* yacc.c:1906  */
 
 
 // Insere Nó
@@ -2568,7 +2571,7 @@ void define_type(node* no){
             semantic_error_type_mismatch(type_left, type_right);
         }
     }
-    if(no->node_class == RELATIONAL_EXPRESSION){
+    if(no->node_class == RELATIONAL_EXPRESSION || no->node_class == LOGICAL_EXPRESSION){
         no->type = "bool";
     }
     else{
@@ -2596,6 +2599,32 @@ void check_semantic_error_return_type(char* return_type){
         if(strcmp(return_type, s->type) != 0){
             semantic_error_return_type(return_type, s->type);
         }
+    }
+}
+
+// Erro semantico de relop com booleans
+void semantic_error_relop_type(char* value){
+    char *error = (char *)malloc(
+        (strlen(value) + 1 + 68) * sizeof(char)
+    ); // +1 for the null-terminator and 68 for semantic error message
+    sprintf(error, "semantic error, unexpected type boolean for relational operator (%s)", value);
+    yyerror(error);
+    free(error);
+}
+
+void check_semantic_error_relop_type(node* no){
+    char* type_left = NULL;
+    char* type_right = NULL;
+    if(no->left != NULL){
+        type_left = no->left->type;
+    }
+    if(no->right != NULL){
+        type_right = no->right->type;
+    }
+    if(// relop with booleans error
+        (strcmp(no->value, "==") != 0) &&
+        (strcmp(type_left, "bool") == 0 || strcmp(type_right, "bool") == 0)){
+        semantic_error_relop_type(no->value);
     }
 }
 

@@ -97,6 +97,8 @@ symbol_node* find_symbol(char* name);
 void define_type(node* no);
 void semantic_error_return_type(char* return_type, char* type);
 void check_semantic_error_return_type(char* return_type);
+void semantic_error_relop_type(char* value);
+void check_semantic_error_relop_type(node* no);
 
 %}
 
@@ -262,6 +264,7 @@ simple-expr:
     op-expr RELOP op-expr { 
         $$ = insert_node(RELATIONAL_EXPRESSION, $1, $3, NULL, $2);
         define_type($$);
+        check_semantic_error_relop_type($$);
         if (DEBUG_MODE) {printf("simple-expr #1 %s\n", $2);}
     }
     | op-expr { 
@@ -335,7 +338,7 @@ op-expr:
 
 // Arrumar na gramática
 term:
-    '(' op-expr ')' { 
+    '(' simple-expr ')' { 
         $$ = $2; 
         if (DEBUG_MODE) {printf("term #1\n");}
     }
@@ -736,7 +739,7 @@ void define_type(node* no){
             semantic_error_type_mismatch(type_left, type_right);
         }
     }
-    if(no->node_class == RELATIONAL_EXPRESSION){
+    if(no->node_class == RELATIONAL_EXPRESSION || no->node_class == LOGICAL_EXPRESSION){
         no->type = "bool";
     }
     else{
@@ -764,6 +767,32 @@ void check_semantic_error_return_type(char* return_type){
         if(strcmp(return_type, s->type) != 0){
             semantic_error_return_type(return_type, s->type);
         }
+    }
+}
+
+// Erro semantico de relop com booleans
+void semantic_error_relop_type(char* value){
+    char *error = (char *)malloc(
+        (strlen(value) + 1 + 68) * sizeof(char)
+    ); // +1 for the null-terminator and 68 for semantic error message
+    sprintf(error, "semantic error, unexpected type boolean for relational operator (%s)", value);
+    yyerror(error);
+    free(error);
+}
+
+void check_semantic_error_relop_type(node* no){
+    char* type_left = NULL;
+    char* type_right = NULL;
+    if(no->left != NULL){
+        type_left = no->left->type;
+    }
+    if(no->right != NULL){
+        type_right = no->right->type;
+    }
+    if(// relop with booleans error
+        (strcmp(no->value, "==") != 0) &&
+        (strcmp(type_left, "bool") == 0 || strcmp(type_right, "bool") == 0)){
+        semantic_error_relop_type(no->value);
     }
 }
 

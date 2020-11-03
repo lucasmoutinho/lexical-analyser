@@ -55,7 +55,7 @@ Gramática
    35        | op-expr LOG term
    36        | term
 
-   37 term: '(' op-expr ')'
+   37 term: '(' simple-expr ')'
    38     | var
    39     | call
    40     | QUOTES string QUOTES
@@ -141,7 +141,7 @@ stmt (41)
 expr (42)
     à esquerda: 24 25, à direita: 17 24
 simple-expr (43)
-    à esquerda: 26 27, à direita: 25 28 29 30 31 52 53
+    à esquerda: 26 27, à direita: 25 28 29 30 31 37 52 53
 conditional-stmt (44)
     à esquerda: 28 29, à direita: 18
 iteration-stmt (45)
@@ -151,7 +151,7 @@ return-stmt (46)
 var (47)
     à esquerda: 33, à direita: 22 23 24 38
 op-expr (48)
-    à esquerda: 34 35 36, à direita: 26 27 34 35 37
+    à esquerda: 34 35 36, à direita: 26 27 34 35
 term (49)
     à esquerda: 37 38 39 40 41 42 43, à direita: 34 35 36
 call (50)
@@ -539,7 +539,7 @@ Estado 40
 
 Estado 41
 
-   37 term: '(' . op-expr ')'
+   37 term: '(' . simple-expr ')'
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -553,10 +553,11 @@ Estado 41
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    var      ir ao estado 59
-    op-expr  ir ao estado 68
-    term     ir ao estado 51
-    call     ir ao estado 52
+    simple-expr  ir ao estado 68
+    var          ir ao estado 59
+    op-expr      ir ao estado 50
+    term         ir ao estado 51
+    call         ir ao estado 52
 
 
 Estado 42
@@ -914,12 +915,8 @@ Estado 67
 
 Estado 68
 
-   34 op-expr: op-expr . OP term
-   35        | op-expr . LOG term
-   37 term: '(' op-expr . ')'
+   37 term: '(' simple-expr . ')'
 
-    OP   deslocar, e ir ao estado 71
-    LOG  deslocar, e ir ao estado 73
     ')'  deslocar, e ir ao estado 91
 
 
@@ -1145,7 +1142,7 @@ Estado 90
 
 Estado 91
 
-   37 term: '(' op-expr ')' .
+   37 term: '(' simple-expr ')' .
 
     $padrão  reduzir usando a regra 37 (term)
 
