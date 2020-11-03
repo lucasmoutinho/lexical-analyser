@@ -96,6 +96,7 @@ void semantic_error_type_mismatch(char* type_left, char* type_right);
 symbol_node* find_symbol(char* name);
 void define_type(node* no);
 void semantic_error_return_type(char* return_type, char* type);
+void semantic_error_no_return(char* type);
 void check_semantic_error_return_type(char* return_type);
 void semantic_error_relop_type(char* value);
 void check_semantic_error_relop_type(node* no);
@@ -190,7 +191,7 @@ params:
 ;
 
 comp-stmt:
-    '{' local-decl stmt-list '}' { 
+    '{' local-decl stmt-list return-stmt '}' { 
         $$ = insert_node(COMPOUND_STATEMENT, $2, $3, NULL, NULL);
         if (DEBUG_MODE) {printf("comp-stmt\n");}
     }
@@ -231,10 +232,6 @@ stmt:
     | iteration-stmt { 
         $$ = $1; 
         if (DEBUG_MODE) {printf("stmt #3\n");}
-    }
-    | return-stmt { 
-        $$ = $1; 
-        if (DEBUG_MODE) {printf("stmt #4\n");}
     }
     | PRINT '(' QUOTES string QUOTES ')' ';' { 
         $$ = insert_node(PRINT_STATEMENT, $4, NULL, "void", $1);
@@ -305,6 +302,11 @@ return-stmt:
         $$ = insert_node(RETURN_STATEMENT, NULL, NULL, "void", $1); 
         check_semantic_error_return_type($$->type);
         if (DEBUG_MODE) {printf("return-stmt #2 %s\n", $1);}
+    }
+    | {
+        $$ = NULL;
+        check_semantic_error_return_type(NULL);
+        if (DEBUG_MODE) {printf("return-stmt #3\n");}
     }
 ;
 
@@ -760,6 +762,26 @@ void semantic_error_return_type(char* return_type, char* type){
     free(error);
 }
 
+// Erro semantico de retorno inexistente em função não void
+void semantic_error_no_return(char* type){
+    char *error = (char *)malloc(
+        (strlen(type) + 1 + 59) * sizeof(char)
+    ); // +1 for the null-terminator and 59 for semantic error message
+    sprintf(error, "semantic error, no return found, expected return of type %s", type);
+    yyerror(error);
+    free(error);
+}
+
+// Erro semantico de retorno existente em função void
+void semantic_error_return_in_void(char* type){
+    char *error = (char *)malloc(
+        (strlen(type) + 1 + 81) * sizeof(char)
+    ); // +1 for the null-terminator and 81 for semantic error message
+    sprintf(error, "semantic error, return of type %s in void function, expected no return or return;", type);
+    yyerror(error);
+    free(error);
+}
+
 void check_semantic_error_return_type(char* return_type){
     symbol_node *s;
     scope* scope = get_stack_head();
@@ -767,8 +789,20 @@ void check_semantic_error_return_type(char* return_type){
     char* key = concat(function_name, stack->scope_name);
     HASH_FIND_STR(symbol_table, key, s);
     if(s != NULL){
-        if(strcmp(return_type, s->type) != 0){
-            semantic_error_return_type(return_type, s->type);
+        if(return_type != NULL){
+            if(strcmp(return_type, s->type) != 0){
+                if(strcmp("void", s->type) == 0){
+                    semantic_error_return_in_void(return_type);
+                }
+                else{
+                    semantic_error_return_type(return_type, s->type);
+                }
+            }
+        }
+        else{
+            if(strcmp("void", s->type) != 0){
+                semantic_error_no_return(s->type);
+            }
         }
     }
 }
