@@ -95,6 +95,8 @@ void semantic_error_not_declared(char* name);
 void semantic_error_type_mismatch(char* type_left, char* type_right);
 symbol_node* find_symbol(char* name);
 void define_type(node* no);
+void semantic_error_return_type(char* return_type, char* type);
+void check_semantic_error_return_type(char* return_type);
 
 %}
 
@@ -126,6 +128,7 @@ prog:
         if (DEBUG_MODE) {printf("prog\n");}
     }
 ;
+
 decl-list: 
     decl-list var-decl { 
         $$ = insert_node(DECLARATION_LIST, $1, $2, NULL, NULL);
@@ -288,13 +291,14 @@ iteration-stmt:
 
 return-stmt:
     RETURN simple-expr ';' { 
-        $$ = insert_node(RETURN_STATEMENT, NULL, $2, NULL, $1); 
+        $$ = insert_node(RETURN_STATEMENT, $2, NULL, NULL, $1); 
         define_type($$);
+        check_semantic_error_return_type($$->type);
         if (DEBUG_MODE) {printf("return-stmt #1 %s\n", $1);}
     }
     | RETURN ';' { 
-        $$ = insert_node(RETURN_STATEMENT, NULL, NULL, NULL, $1); 
-        define_type($$);
+        $$ = insert_node(RETURN_STATEMENT, NULL, NULL, "void", $1); 
+        check_semantic_error_return_type($$->type);
         if (DEBUG_MODE) {printf("return-stmt #2 %s\n", $1);}
     }
 ;
@@ -740,6 +744,28 @@ void define_type(node* no){
     }
 }
 
+// Erro semantico de tipo de retorno diferente de tipo da função
+void semantic_error_return_type(char* return_type, char* type){
+    char *error = (char *)malloc(
+        (strlen(type) + strlen(return_type) + 1 + 51) * sizeof(char)
+    ); // +1 for the null-terminator and 51 for semantic error message
+    sprintf(error, "semantic error, return of type %s, expected type %s", return_type, type);
+    yyerror(error);
+    free(error);
+}
+
+void check_semantic_error_return_type(char* return_type){
+    symbol_node *s;
+    scope* scope = get_stack_head();
+    char* function_name = scope->scope_name;
+    char* key = concat(function_name, stack->scope_name);
+    HASH_FIND_STR(symbol_table, key, s);
+    if(s != NULL){
+        if(strcmp(return_type, s->type) != 0){
+            semantic_error_return_type(return_type, s->type);
+        }
+    }
+}
 
 int main(int argc, char **argv) {
     ++argv, --argc;
