@@ -52,7 +52,7 @@ typedef struct node {
     struct node* left;  // Ponteiro pra esquerda 
     struct node* right; // Ponteiro pra direita
     char* type;         // Tipo da nó
-    char* nome;         // Nome da nó
+    char* value;        // valor armazenado no nó
 } node;
 
 node* parser_tree = NULL; // Inicialização da árvore
@@ -77,7 +77,7 @@ typedef struct symbol_node {
 symbol_node *symbol_table = NULL;    // Inicialização da tabela de símbolos
 
 // Declarações de funções
-node* insert_node(int node_class, node* left, node* right, char* type, char* nome);
+node* insert_node(int node_class, node* left, node* right, char* type, char* value);
 void print_class(int node_class);
 void print_tree(node * tree, int depth);
 void print_depth(int depth);
@@ -92,6 +92,7 @@ void pop_stack();
 void initialize_global_scope();
 void semantic_error_redeclaration(char* name, char* scope);
 void semantic_error_not_declared(char* name);
+void semantic_error_type_mismatch(char* type_left, char* type_right);
 symbol_node* find_symbol(char* name);
 void define_type(node* no);
 
@@ -229,15 +230,15 @@ stmt:
         if (DEBUG_MODE) {printf("stmt #4\n");}
     }
     | PRINT '(' QUOTES string QUOTES ')' ';' { 
-        $$ = insert_node(PRINT_STATEMENT, $4, NULL, NULL, $1);
+        $$ = insert_node(PRINT_STATEMENT, $4, NULL, "void", $1);
         if (DEBUG_MODE) {printf("stmt #4 %s\n", $1);}
     }
     | PRINT '(' var ')' ';' { 
-        $$ = insert_node(PRINT_STATEMENT, $3, NULL, NULL, $1); 
+        $$ = insert_node(PRINT_STATEMENT, $3, NULL, "void", $1); 
         if (DEBUG_MODE) {printf("stmt #5 %s\n", $1);} 
     }
     | SCAN '(' var ')' ';' { 
-        $$ = insert_node(SCAN_STATEMENT, $3, NULL, NULL, $1); 
+        $$ = insert_node(SCAN_STATEMENT, $3, NULL, "void", $1); 
         if (DEBUG_MODE) {printf("stmt #6 %s\n", $1);}
     }
 ;
@@ -431,14 +432,14 @@ string:
 %%
 
 // Insere Nó
-node* insert_node(int node_class, node* left, node* right, char* type, char* nome){
+node* insert_node(int node_class, node* left, node* right, char* type, char* value){
     node* aux_node = (node*)calloc(1, sizeof(node));
 
     aux_node->node_class = node_class;
     aux_node->left = left;
     aux_node->right = right;
     aux_node->type = type;
-    aux_node->nome = nome;
+    aux_node->value = value;
 
     return aux_node;
 }
@@ -539,8 +540,8 @@ void print_tree(node * tree, int depth) {
         if (tree->type != NULL){
             printf("type: %s | ", tree->type);
         }
-        if (tree->nome != NULL){
-            printf("%s | ", tree->nome);
+        if (tree->value != NULL){
+            printf("value: %s | ", tree->value);
         }
         printf("\n");
         print_tree(tree->left, depth + 1);
@@ -684,11 +685,11 @@ symbol_node* find_symbol(char* name) {
 }
 
 // Erro semantico de tipo incompatível
-void semantic_error_type_mismatch(char* type_left, char* name_left, char* type_right, char* name_right){
+void semantic_error_type_mismatch(char* type_left, char* type_right){
     char *error = (char *)malloc(
-        (strlen(name_left) + strlen(type_left) + strlen(name_right) + strlen(type_right) + 1 + 55) * sizeof(char)
+        (strlen(type_left) + strlen(type_right) + 1 + 55) * sizeof(char)
     ); // +1 for the null-terminator and 55 for semantic error message
-    sprintf(error, "semantic error, type mismatch between %s(%s) and %s(%s)", type_left, name_left, type_right, name_right);
+    sprintf(error, "semantic error, type mismatch between %s and %s", type_left, type_right);
     yyerror(error);
     free(error);
 }
@@ -730,9 +731,10 @@ void define_type(node* no){
             (strcmp(type_left, "float") == 0 && strcmp(type_right, "int") == 0)
         ){
             add_implicit_conversion(no);
+            type_left = no->left->type;
         }
         else{ // type mismatch -- no implicit conversion
-            semantic_error_type_mismatch(type_left, no->left->nome, type_right, no->right->nome);
+            semantic_error_type_mismatch(type_left, type_right);
         }
     }
     no->type = type_left;
