@@ -125,6 +125,8 @@ void free_args_list(args_node* args_list);
 void check_semantic_error_type_mismatch_args(node* no, char* function_name);
 args_node* create_param_list_native_function(char* function_name);
 void check_semantic_error_type_mismatch_args_native_function(node* no, char* function_name);
+void semantic_error_no_main();
+void check_semantic_error_no_main();
 
 %}
 
@@ -1097,6 +1099,7 @@ args_node* create_param_list_native_function(char* function_name){
     return param_list;
 }
 
+// Checa type mismatch para args de função nativa
 void check_semantic_error_type_mismatch_args_native_function(node* no, char* function_name){
     args_node* args_list = create_args_list(no);
     args_node* arg_atual = NULL;
@@ -1137,6 +1140,26 @@ void check_semantic_error_type_mismatch_args_native_function(node* no, char* fun
     }
 }
 
+// Erro semantico de main não declarada
+void semantic_error_no_main(){
+    char *error = (char *)malloc(
+        (1 + 47) * sizeof(char)
+    ); // +1 for the null-terminator and 47 for semantic error message
+    sprintf(error, "semantic error, no declaration of function main");
+    yyerror(error);
+    free(error);
+}
+
+// Checa erro semântico de main não declarada
+void check_semantic_error_no_main(){
+    symbol_node* s;
+    char* key = concat("main", stack->scope_name);
+    HASH_FIND_STR(symbol_table, key, s);
+    if(s == NULL){
+        semantic_error_no_main();
+    }
+}
+
 int main(int argc, char **argv) {
     ++argv, --argc;
     if(argc > 0)
@@ -1146,6 +1169,7 @@ int main(int argc, char **argv) {
     initialize_global_scope();
     yyparse();
     yylex_destroy();
+    check_semantic_error_no_main();
     if(total_errors == 0){
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
