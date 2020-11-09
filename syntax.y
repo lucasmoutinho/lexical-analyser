@@ -1168,8 +1168,8 @@ int main(int argc, char **argv) {
         yyin = stdin;
     initialize_global_scope();
     yyparse();
-    yylex_destroy();
     check_semantic_error_no_main();
+    yylex_destroy();
     if(total_errors == 0){
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
