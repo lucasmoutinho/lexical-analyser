@@ -1,0 +1,30 @@
+/* 
+Função pra gerar string
+*/
+string lowerCase(string aux, int i, float a, bool b){
+    return strLower(aux);
+}
+
+/* Main */
+int main(){
+    string stringTeste;
+    bool always_true;
+    bool result;
+    int i;
+    float a;
+    bool b;
+    always_true = true;
+    scan(stringTeste);
+    if(always_true){
+        result = stringTeste == lowerCase(stringTeste, i, a, b);
+    }
+    if (result){
+        print(stringTeste);
+    }
+    else{
+        while(always_true){
+            print("Não é lowerCase");
+        }
+    }
+    return 0;
+}

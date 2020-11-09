@@ -65,6 +65,12 @@ typedef struct scope {
 
 scope* stack = NULL; // Inicialização da pilha de escopo
 
+typedef struct args_node {
+    char* name; // Nome do argumento
+    char* type; // tipo do argumento
+    struct args_node *next;    // Próximo parametro
+} args_node;
+
 typedef struct param_node {
     char* key;                  // Chave pra tabela de símbolos
     struct param_node *next;    // Próximo parametro
@@ -108,6 +114,7 @@ void semantic_error_relop_type(char* value);
 void check_semantic_error_relop_type(node* no);
 void semantic_error_op_type(char* value);
 void check_semantic_error_op_type(node* no);
+void check_semantic_error_type_mismatch_args(node* no, char* function_name);
 
 %}
 
@@ -386,6 +393,7 @@ call:
             type = s->type;
         }
         $$ = insert_node(FUNCTION_CALL, $3, NULL, type, $1);
+        check_semantic_error_type_mismatch_args($3, $1);
         if (DEBUG_MODE) {printf("call #1 %s\n", $1);}
     }
     | STRCONCAT '(' args ')' { 
@@ -595,8 +603,6 @@ symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, 
         scope* scope = get_stack_head();
         char* function_name = scope->scope_name;
         char* function_key = concat(function_name, stack->scope_name);
-        printf("function_key: %s\n", function_key);
-        printf("param_key: %s\n", key);
         HASH_FIND_STR(symbol_table, function_key, f);
         if(f != NULL){
             param_node *p = (param_node *)malloc(sizeof *p);
@@ -891,6 +897,75 @@ void check_semantic_error_op_type(node* no){
         (strcmp(type_left, "string") == 0 || strcmp(type_right, "string") == 0)){
         semantic_error_op_type(no->value);
     }
+}
+
+// Checa erro semantico de tipo incompatível para argumentos
+void check_semantic_error_type_mismatch_args(node* no, char* function_name){
+    args_node* args_list = NULL;
+    args_node* arg_atual = NULL;
+    node* no_atual = no;
+
+    // Monta lista de argumentos
+    if(no != NULL){
+        if(no_atual->node_class == ARGS_LIST){
+            // Destrincha ARGS_lIST
+            while(no_atual->node_class == ARGS_LIST){
+                // Esquerda
+                args_node *a = (args_node *)malloc(sizeof *a);
+                a->name = no_atual->right->value;
+                a->type = no_atual->right->type;
+                a->next = NULL;
+                if(args_list == NULL){
+                    args_list = a;
+                    arg_atual = args_list;
+                }
+                else{
+                    arg_atual->next = a;
+                    arg_atual = arg_atual-> next;
+                }
+                // Direita no fim
+                if(no_atual->left->node_class != ARGS_LIST){
+                    args_node *a = (args_node *)malloc(sizeof *a);
+                    a->name = no_atual->left->value;
+                    a->type = no_atual->left->type;
+                    a->next = NULL;
+                    arg_atual->next = a;
+                    arg_atual = arg_atual-> next;
+                }
+                no_atual = no_atual->left;
+            }
+            
+        }
+        else{
+            printf("not args\n");
+            args_node *a = (args_node *)malloc(sizeof *a);
+            a->name = no->value;
+            a->type = no->type;
+            a->next = NULL;
+            args_list = a;
+        }
+    }
+
+    // Pega params_list
+    param_node* param_list = NULL;
+    symbol_node* f;
+    char* key = concat(function_name, stack->scope_name);
+    HASH_FIND_STR(symbol_table, key, f);
+    if(f != NULL){
+        param_list = f->param_list;
+    }
+
+    // // Compara
+    // printf("args_list\n");
+    // while(args_list != NULL){
+    //     printf("name: %s, type: %s\n", args_list->name, args_list->type);
+    //     args_list = args_list->next;
+    // }
+    // printf("params_list\n");
+    // while(param_list != NULL){
+    //     printf("key: %s\n", param_list->key);
+    //     param_list = param_list->next;
+    // }
 }
 
 int main(int argc, char **argv) {
