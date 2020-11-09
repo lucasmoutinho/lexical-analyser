@@ -937,7 +937,6 @@ void check_semantic_error_type_mismatch_args(node* no, char* function_name){
             
         }
         else{
-            printf("not args\n");
             args_node *a = (args_node *)malloc(sizeof *a);
             a->name = no->value;
             a->type = no->type;
