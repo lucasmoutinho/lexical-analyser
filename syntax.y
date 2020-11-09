@@ -191,7 +191,7 @@ params:
 ;
 
 comp-stmt:
-    '{' local-decl stmt-list return-stmt '}' { 
+    '{' local-decl stmt-list '}' { 
         $$ = insert_node(COMPOUND_STATEMENT, $2, $3, NULL, NULL);
         if (DEBUG_MODE) {printf("comp-stmt\n");}
     }
@@ -233,17 +233,21 @@ stmt:
         $$ = $1; 
         if (DEBUG_MODE) {printf("stmt #3\n");}
     }
+    | return-stmt {
+        $$ = $1; 
+        if (DEBUG_MODE) {printf("stmt #4\n");}
+    }
     | PRINT '(' QUOTES string QUOTES ')' ';' { 
         $$ = insert_node(PRINT_STATEMENT, $4, NULL, "void", $1);
-        if (DEBUG_MODE) {printf("stmt #4 %s\n", $1);}
+        if (DEBUG_MODE) {printf("stmt #5 %s\n", $1);}
     }
     | PRINT '(' var ')' ';' { 
         $$ = insert_node(PRINT_STATEMENT, $3, NULL, "void", $1); 
-        if (DEBUG_MODE) {printf("stmt #5 %s\n", $1);} 
+        if (DEBUG_MODE) {printf("stmt #6 %s\n", $1);} 
     }
     | SCAN '(' var ')' ';' { 
         $$ = insert_node(SCAN_STATEMENT, $3, NULL, "void", $1); 
-        if (DEBUG_MODE) {printf("stmt #6 %s\n", $1);}
+        if (DEBUG_MODE) {printf("stmt #7 %s\n", $1);}
     }
 ;
 
@@ -302,11 +306,6 @@ return-stmt:
         $$ = insert_node(RETURN_STATEMENT, NULL, NULL, "void", $1); 
         check_semantic_error_return_type($$->type);
         if (DEBUG_MODE) {printf("return-stmt #2 %s\n", $1);}
-    }
-    | {
-        $$ = NULL;
-        check_semantic_error_return_type(NULL);
-        if (DEBUG_MODE) {printf("return-stmt #3\n");}
     }
 ;
 
@@ -762,16 +761,6 @@ void semantic_error_return_type(char* return_type, char* type){
     free(error);
 }
 
-// Erro semantico de retorno inexistente em função não void
-void semantic_error_no_return(char* type){
-    char *error = (char *)malloc(
-        (strlen(type) + 1 + 59) * sizeof(char)
-    ); // +1 for the null-terminator and 59 for semantic error message
-    sprintf(error, "semantic error, no return found, expected return of type %s", type);
-    yyerror(error);
-    free(error);
-}
-
 // Erro semantico de retorno existente em função void
 void semantic_error_return_in_void(char* type){
     char *error = (char *)malloc(
@@ -789,19 +778,12 @@ void check_semantic_error_return_type(char* return_type){
     char* key = concat(function_name, stack->scope_name);
     HASH_FIND_STR(symbol_table, key, s);
     if(s != NULL){
-        if(return_type != NULL){
-            if(strcmp(return_type, s->type) != 0){
-                if(strcmp("void", s->type) == 0){
-                    semantic_error_return_in_void(return_type);
-                }
-                else{
-                    semantic_error_return_type(return_type, s->type);
-                }
+        if(strcmp(return_type, s->type) != 0){
+            if(strcmp("void", s->type) == 0){
+                semantic_error_return_in_void(return_type);
             }
-        }
-        else{
-            if(strcmp("void", s->type) != 0){
-                semantic_error_no_return(s->type);
+            else{
+                semantic_error_return_type(return_type, s->type);
             }
         }
     }
