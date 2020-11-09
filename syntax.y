@@ -65,12 +65,18 @@ typedef struct scope {
 
 scope* stack = NULL; // Inicialização da pilha de escopo
 
+typedef struct param_node {
+    char* key;                  // Chave pra tabela de símbolos
+    struct param_node *next;    // Próximo parametro
+} param_node;
+
 typedef struct symbol_node {
     char* key;                      // key field
     char* name;                     // symbol name
     char* type;                     // int | float | bool | void | string 
     char symbol_type;               // 'V' (variable) | 'F' (function) | 'P' (parameter)
-    char* scope_name;                // Nome do escopo
+    param_node* param_list;
+    char* scope_name;               // Nome do escopo
     UT_hash_handle hh;              // makes this structure hashable
 } symbol_node;
 
@@ -563,6 +569,15 @@ void free_tree(struct node* no){
     free(no);
 }
 
+// Concatena strings do stackoverflow
+char* concat(const char *s1, const char *s2){
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    strcpy(result, s1);
+    strcat(result, "::");
+    strcat(result, s2);
+    return result;
+}
+
 // Create symbol node
 symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, char* scope_name){
     symbol_node *s = (symbol_node *)malloc(sizeof *s);
@@ -571,16 +586,35 @@ symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, 
     s->type = type;
     s->symbol_type = symbol_type;
     s->scope_name = scope_name;
-    return s;
-}
+    s->param_list = NULL;
 
-// Concatena strings do stackoverflow
-char* concat(const char *s1, const char *s2){
-    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
-    strcpy(result, s1);
-    strcat(result, "::");
-    strcat(result, s2);
-    return result;
+    // Referência de parâmetros para função
+    if(symbol_type == 'P'){
+        symbol_node *f;
+        param_node *prev_p;
+        scope* scope = get_stack_head();
+        char* function_name = scope->scope_name;
+        char* function_key = concat(function_name, stack->scope_name);
+        printf("function_key: %s\n", function_key);
+        printf("param_key: %s\n", key);
+        HASH_FIND_STR(symbol_table, function_key, f);
+        if(f != NULL){
+            param_node *p = (param_node *)malloc(sizeof *p);
+            p->key = key;
+            p->next = NULL;
+            if(f->param_list == NULL){
+                f->param_list = p;
+            }
+            else{
+                prev_p = f->param_list;
+                while(prev_p->next != NULL){
+                    prev_p = prev_p->next;
+                }
+                prev_p->next = p;
+            }
+        }
+    }
+    return s;
 }
 
 // Retorna o stack head
@@ -635,9 +669,25 @@ void add_symbol(char* name, char* type, char symbol_type) {
 // Printa tabela de símbolos
 void print_symbol_table() {
     symbol_node *s;
+    symbol_node *ps;
+    param_node *p;
+    int number_of_space;
     printf("\n\n----------  TABELA DE SÍMBOLOS ----------\n\n");
     for(s=symbol_table; s != NULL; s=s->hh.next) {
-        printf("key: %30s | name: %20s | type: %10s | symbol_type: %c | scope: %10s\n", s->key, s->name, s->type, s->symbol_type, s->scope_name);
+        if(s->symbol_type != 'P'){
+            printf("key: %30s | name: %20s | type: %10s | symbol_type: %c | scope: %10s |\n", s->key, s->name, s->type, s->symbol_type, s->scope_name);
+            if(s->symbol_type == 'F'){
+                for(p=s->param_list; p != NULL; p=p->next) {
+                    HASH_FIND_STR(symbol_table, p->key, ps);
+                    if(ps != NULL){
+                        for(number_of_space = 36; number_of_space > 0; number_of_space--){
+                            printf(" ");
+                        }
+                        printf("| param_name: %14s | type: %10s | symbol_type: %c | scope: %10s |\n", ps->name, ps->type, ps->symbol_type, ps->scope_name);
+                    }
+                }
+            }
+        }
     }
 }
 
