@@ -10,7 +10,7 @@ int main(){
     scan(inputInteger);
     outputFloat = inputInteger * 2.0;
 
-    if(strUpper(text) == upper_text){
+    if(true < false){
         print("Comparison Success, your number doubled is: ");
         print(outputFloat);
     }
