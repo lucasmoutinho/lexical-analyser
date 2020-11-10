@@ -1041,7 +1041,11 @@ void check_semantic_error_type_mismatch_args(node* no, char* function_name){
         while(arg_atual != NULL){
             HASH_FIND_STR(symbol_table, param_atual->key, s);
             if(s != NULL){
-                if(strcmp(arg_atual->type, s->type) != 0){
+                if(
+                    arg_atual->type != NULL &&
+                    s->type != NULL &&
+                    (strcmp(arg_atual->type, s->type) != 0)
+                ){
                     // type mismatch
                     semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, s->name, s->type);
                 }
@@ -1130,7 +1134,11 @@ void check_semantic_error_type_mismatch_args_native_function(node* no, char* fun
         arg_atual = args_list;
         param_atual = param_list;
         while(arg_atual != NULL){
-            if(strcmp(arg_atual->type, param_atual->type) != 0){
+            if(
+                arg_atual->type != NULL &&
+                param_atual->type != NULL &&
+                (strcmp(arg_atual->type, param_atual->type) != 0)
+            ){
                 // type mismatch
                 semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, param_atual->name, param_atual->type);
             }
