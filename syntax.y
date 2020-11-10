@@ -58,7 +58,7 @@ typedef struct node {
     struct node* right; // Ponteiro pra direita
     char* type;         // Tipo da nó
     char* value;        // valor armazenado no nó
-} node;
+} node; // Nó da árvore
 
 node* parser_tree = NULL; // Inicialização da árvore
 
@@ -66,7 +66,7 @@ typedef struct scope {
     char* scope_name;    // Nome do escopo
     char* type;          // Tipo da variável
     struct scope *next;
-} scope;
+} scope; // Escopo
 
 scope* stack = NULL; // Inicialização da pilha de escopo
 
@@ -74,12 +74,12 @@ typedef struct args_node {
     char* name; // Nome do argumento
     char* type; // tipo do argumento
     struct args_node *next;    // Próximo parametro
-} args_node;
+} args_node; // Estrutura para criação de lista de argumentos
 
 typedef struct param_node {
     char* key;                  // Chave pra tabela de símbolos
     struct param_node *next;    // Próximo parametro
-} param_node;
+} param_node; // Estrutura para armazenar uma lista de chaves da tabela de símbolos de parâmetros
 
 typedef struct symbol_node {
     char* key;                      // key field
@@ -89,7 +89,7 @@ typedef struct symbol_node {
     param_node* param_list;
     char* scope_name;               // Nome do escopo
     UT_hash_handle hh;              // makes this structure hashable
-} symbol_node;
+} symbol_node; // Nó da tabela de símbolos
 
 symbol_node *symbol_table = NULL;    // Inicialização da tabela de símbolos
 
@@ -140,7 +140,7 @@ void check_semantic_error_no_main();
 %token <str> ID
 %token <str> IF ELSE WHILE RETURN PRINT SCAN 
 %token <str> STRUPPER STRLOWER STRCONCAT STRCOPY STRINSERT
-%token QUOTES
+%token <str> QUOTES
 
 %right <str> ASSIGN
 %left <str> OP RELOP LOG
@@ -155,6 +155,7 @@ void check_semantic_error_no_main();
 prog: 
     decl-list { 
         parser_tree = $1;
+        check_semantic_error_no_main();
         if (DEBUG_MODE) {printf("prog\n");}
     }
 ;
@@ -680,7 +681,10 @@ void push_stack(char* scope_name, char* type){
 // Pop do scope stack
 void pop_stack(){
     scope* s = stack;
-    if(s->scope_name == "global" && s->next == NULL) {
+    if(
+        (strcmp(s->scope_name, "global") == 0) && 
+        s->next == NULL
+    ) {
         return;
     }
     while(s->next->next != NULL){
@@ -768,7 +772,10 @@ symbol_node* find_symbol(char* name) {
     scope* scope = get_stack_head();
     char *key = concat(name, scope->scope_name);
     HASH_FIND_STR(symbol_table, key, s);
-    if(s == NULL && scope->scope_name != "global"){
+    if(
+        s == NULL && 
+        (strcmp(scope->scope_name, "global") != 0)
+    ){
         scope = stack;
         key = concat(name, scope->scope_name);
         HASH_FIND_STR(symbol_table, key, s);
@@ -793,7 +800,6 @@ void semantic_error_type_mismatch(char* type_left, char* type_right){
 // 
 void add_implicit_conversion(node *no){
     node* conversion_node;
-    node* aux;
     if(strcmp(no->left->type, "int") == 0 && strcmp(no->right->type, "float") == 0){
         if(no->node_class == ASSIGN_EXPRESSION){
             conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
@@ -1130,7 +1136,6 @@ void check_semantic_error_type_mismatch_args_native_function(node* no, char* fun
         semantic_error_wrong_number_arguments(function_name, number_args, number_param);
     }
     else{
-        symbol_node* s;
         arg_atual = args_list;
         param_atual = param_list;
         while(arg_atual != NULL){
@@ -1176,13 +1181,12 @@ int main(int argc, char **argv) {
         yyin = stdin;
     initialize_global_scope();
     yyparse();
-    check_semantic_error_no_main();
-    yylex_destroy();
     if(total_errors == 0){
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
         print_symbol_table();
     }
+    yylex_destroy();
     free_tree(parser_tree);
     free_symbol_table();
     return 0;

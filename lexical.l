@@ -1,3 +1,6 @@
+%option nounput
+%option noinput
+
 %{
 
 #include <string.h>
@@ -72,7 +75,7 @@ QUOTES \"
 
 
 <STRING>{STR} { 
-    if(yytext == "\n"){line++;} 
+    if(strcmp(yytext, "\n") == 0){line++;} 
     // printf("%s", yytext);
     yylval.str = (char *) strdup(yytext);
     return STR; 
