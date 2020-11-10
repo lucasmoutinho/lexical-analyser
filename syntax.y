@@ -36,6 +36,11 @@
 #define ARGS_LIST 22
 #define INT_TO_FLOAT 23
 #define FLOAT_TO_INT 24
+#define STRCONCAT_STATEMENT 25
+#define STRCOPY_STATEMENT 26
+#define STRINSERT_STATEMENT 27
+#define STRUPPER_STATEMENT 28
+#define STRLOWER_STATEMENT 29
 
 // Extern variables
 int yylex();
@@ -53,7 +58,7 @@ typedef struct node {
     struct node* right; // Ponteiro pra direita
     char* type;         // Tipo da nó
     char* value;        // valor armazenado no nó
-} node;
+} node; // Nó da árvore
 
 node* parser_tree = NULL; // Inicialização da árvore
 
@@ -61,18 +66,30 @@ typedef struct scope {
     char* scope_name;    // Nome do escopo
     char* type;          // Tipo da variável
     struct scope *next;
-} scope;
+} scope; // Escopo
 
 scope* stack = NULL; // Inicialização da pilha de escopo
+
+typedef struct args_node {
+    char* name; // Nome do argumento
+    char* type; // tipo do argumento
+    struct args_node *next;    // Próximo parametro
+} args_node; // Estrutura para criação de lista de argumentos
+
+typedef struct param_node {
+    char* key;                  // Chave pra tabela de símbolos
+    struct param_node *next;    // Próximo parametro
+} param_node; // Estrutura para armazenar uma lista de chaves da tabela de símbolos de parâmetros
 
 typedef struct symbol_node {
     char* key;                      // key field
     char* name;                     // symbol name
     char* type;                     // int | float | bool | void | string 
     char symbol_type;               // 'V' (variable) | 'F' (function) | 'P' (parameter)
-    char* scope_name;                // Nome do escopo
+    param_node* param_list;
+    char* scope_name;               // Nome do escopo
     UT_hash_handle hh;              // makes this structure hashable
-} symbol_node;
+} symbol_node; // Nó da tabela de símbolos
 
 symbol_node *symbol_table = NULL;    // Inicialização da tabela de símbolos
 
@@ -96,12 +113,20 @@ void semantic_error_type_mismatch(char* type_left, char* type_right);
 symbol_node* find_symbol(char* name);
 void define_type(node* no);
 void semantic_error_return_type(char* return_type, char* type);
-void semantic_error_no_return(char* type);
 void check_semantic_error_return_type(char* return_type);
 void semantic_error_relop_type(char* value);
 void check_semantic_error_relop_type(node* no);
 void semantic_error_op_type(char* value);
 void check_semantic_error_op_type(node* no);
+void semantic_error_wrong_number_arguments(char* value, int number_args, int number_param);
+void semantic_error_type_mismatch_args(char* function_name, char* arg_name, char* type_arg, char* param_name, char* type_param);
+args_node* create_args_list(node* no);
+void free_args_list(args_node* args_list);
+void check_semantic_error_type_mismatch_args(node* no, char* function_name);
+args_node* create_param_list_native_function(char* function_name);
+void check_semantic_error_type_mismatch_args_native_function(node* no, char* function_name);
+void semantic_error_no_main();
+void check_semantic_error_no_main();
 
 %}
 
@@ -115,7 +140,7 @@ void check_semantic_error_op_type(node* no);
 %token <str> ID
 %token <str> IF ELSE WHILE RETURN PRINT SCAN 
 %token <str> STRUPPER STRLOWER STRCONCAT STRCOPY STRINSERT
-%token QUOTES
+%token <str> QUOTES
 
 %right <str> ASSIGN
 %left <str> OP RELOP LOG
@@ -130,6 +155,7 @@ void check_semantic_error_op_type(node* no);
 prog: 
     decl-list { 
         parser_tree = $1;
+        check_semantic_error_no_main();
         if (DEBUG_MODE) {printf("prog\n");}
     }
 ;
@@ -380,26 +406,32 @@ call:
             type = s->type;
         }
         $$ = insert_node(FUNCTION_CALL, $3, NULL, type, $1);
+        check_semantic_error_type_mismatch_args($3, $1);
         if (DEBUG_MODE) {printf("call #1 %s\n", $1);}
     }
     | STRCONCAT '(' args ')' { 
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1); 
+        $$ = insert_node(STRCONCAT_STATEMENT, $3, NULL, "string", $1); 
+        check_semantic_error_type_mismatch_args_native_function($3, $1);
         if (DEBUG_MODE) {printf("call #2 %s\n", $1);}
     }
     | STRCOPY '(' args ')' { 
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1);
+        $$ = insert_node(STRCOPY_STATEMENT, $3, NULL, "string", $1);
+        check_semantic_error_type_mismatch_args_native_function($3, $1);
         if (DEBUG_MODE) {printf("call #4 %s\n", $1);}
     }
     | STRINSERT '(' args ')' {  
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1);
+        $$ = insert_node(STRINSERT_STATEMENT, $3, NULL, "string", $1);
+        check_semantic_error_type_mismatch_args_native_function($3, $1);
         if (DEBUG_MODE) {printf("call #5 %s\n", $1);}
     }
     | STRUPPER '(' args ')' {  
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1);
+        $$ = insert_node(STRUPPER_STATEMENT, $3, NULL, "string", $1);
+        check_semantic_error_type_mismatch_args_native_function($3, $1);
         if (DEBUG_MODE) {printf("call #6 %s\n", $1);}
     }
     | STRLOWER '(' args ')' {  
-        $$ = insert_node(FUNCTION_CALL, $3, NULL, "string", $1);
+        $$ = insert_node(STRLOWER_STATEMENT, $3, NULL, "string", $1);
+        check_semantic_error_type_mismatch_args_native_function($3, $1);
         if (DEBUG_MODE) {printf("call #7 %s\n", $1);}
     }
 ;
@@ -415,8 +447,9 @@ args:
     }
 ;
 
+// Arrumar na gramática
 arg-list:
-    arg-list ',' simple-expr { 
+    simple-expr ',' arg-list { 
         $$ = insert_node(ARGS_LIST, $1, $3, NULL, NULL); 
         if (DEBUG_MODE) {printf("args-list #1\n");}
     }
@@ -525,6 +558,21 @@ void print_class(int node_class){
         case FLOAT_TO_INT:
             printf("FLOAT_TO_INT");
         break;
+        case STRCONCAT_STATEMENT:
+            printf("STRCONCAT");
+        break;
+        case STRCOPY_STATEMENT:
+            printf("STRCOPY");
+        break;
+        case STRINSERT_STATEMENT:
+            printf("STRINSERT");
+        break;
+        case STRUPPER_STATEMENT:
+            printf("STRUPPER");
+        break;
+        case STRLOWER_STATEMENT:
+            printf("STRLOWER");
+        break;
     }
     printf(" | ");
 }
@@ -563,6 +611,15 @@ void free_tree(struct node* no){
     free(no);
 }
 
+// Concatena strings do stackoverflow
+char* concat(const char *s1, const char *s2){
+    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    strcpy(result, s1);
+    strcat(result, "::");
+    strcat(result, s2);
+    return result;
+}
+
 // Create symbol node
 symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, char* scope_name){
     symbol_node *s = (symbol_node *)malloc(sizeof *s);
@@ -571,16 +628,33 @@ symbol_node* create_symbol(char* key, char *name, char* type, char symbol_type, 
     s->type = type;
     s->symbol_type = symbol_type;
     s->scope_name = scope_name;
-    return s;
-}
+    s->param_list = NULL;
 
-// Concatena strings do stackoverflow
-char* concat(const char *s1, const char *s2){
-    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
-    strcpy(result, s1);
-    strcat(result, "::");
-    strcat(result, s2);
-    return result;
+    // Referência de parâmetros para função
+    if(symbol_type == 'P'){
+        symbol_node *f;
+        param_node *prev_p;
+        scope* scope = get_stack_head();
+        char* function_name = scope->scope_name;
+        char* function_key = concat(function_name, stack->scope_name);
+        HASH_FIND_STR(symbol_table, function_key, f);
+        if(f != NULL){
+            param_node *p = (param_node *)malloc(sizeof *p);
+            p->key = key;
+            p->next = NULL;
+            if(f->param_list == NULL){
+                f->param_list = p;
+            }
+            else{
+                prev_p = f->param_list;
+                while(prev_p->next != NULL){
+                    prev_p = prev_p->next;
+                }
+                prev_p->next = p;
+            }
+        }
+    }
+    return s;
 }
 
 // Retorna o stack head
@@ -607,7 +681,10 @@ void push_stack(char* scope_name, char* type){
 // Pop do scope stack
 void pop_stack(){
     scope* s = stack;
-    if(s->scope_name == "global" && s->next == NULL) {
+    if(
+        (strcmp(s->scope_name, "global") == 0) && 
+        s->next == NULL
+    ) {
         return;
     }
     while(s->next->next != NULL){
@@ -635,9 +712,25 @@ void add_symbol(char* name, char* type, char symbol_type) {
 // Printa tabela de símbolos
 void print_symbol_table() {
     symbol_node *s;
+    symbol_node *ps;
+    param_node *p;
+    int number_of_space;
     printf("\n\n----------  TABELA DE SÍMBOLOS ----------\n\n");
     for(s=symbol_table; s != NULL; s=s->hh.next) {
-        printf("key: %30s | name: %20s | type: %10s | symbol_type: %c | scope: %10s\n", s->key, s->name, s->type, s->symbol_type, s->scope_name);
+        if(s->symbol_type != 'P'){
+            printf("key: %30s | name: %20s | type: %10s | symbol_type: %c | scope: %10s |\n", s->key, s->name, s->type, s->symbol_type, s->scope_name);
+            if(s->symbol_type == 'F'){
+                for(p=s->param_list; p != NULL; p=p->next) {
+                    HASH_FIND_STR(symbol_table, p->key, ps);
+                    if(ps != NULL){
+                        for(number_of_space = 36; number_of_space > 0; number_of_space--){
+                            printf(" ");
+                        }
+                        printf("| param_name: %14s | type: %10s | symbol_type: %c | scope: %10s |\n", ps->name, ps->type, ps->symbol_type, ps->scope_name);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -679,7 +772,10 @@ symbol_node* find_symbol(char* name) {
     scope* scope = get_stack_head();
     char *key = concat(name, scope->scope_name);
     HASH_FIND_STR(symbol_table, key, s);
-    if(s == NULL && scope->scope_name != "global"){
+    if(
+        s == NULL && 
+        (strcmp(scope->scope_name, "global") != 0)
+    ){
         scope = stack;
         key = concat(name, scope->scope_name);
         HASH_FIND_STR(symbol_table, key, s);
@@ -704,7 +800,6 @@ void semantic_error_type_mismatch(char* type_left, char* type_right){
 // 
 void add_implicit_conversion(node *no){
     node* conversion_node;
-    node* aux;
     if(strcmp(no->left->type, "int") == 0 && strcmp(no->right->type, "float") == 0){
         if(no->node_class == ASSIGN_EXPRESSION){
             conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
@@ -843,6 +938,241 @@ void check_semantic_error_op_type(node* no){
     }
 }
 
+// Erro semantico de numero de argumentos errado
+void semantic_error_wrong_number_arguments(char* function_name, int number_args, int number_param){
+    char *error = (char *)malloc(
+        (strlen(function_name) + 1 + 70) * sizeof(char)
+    ); // +1 for the null-terminator and 70 for semantic error message
+    sprintf(error, "semantic error, call of function (%s) with %d arguments, expected %d", function_name, number_args, number_param);
+    yyerror(error);
+    free(error);
+}
+
+// Erro semantico de tipo incompatível entre arg e params
+void semantic_error_type_mismatch_args(char* function_name, char* arg_name, char* type_arg, char* param_name, char* type_param){
+    char *error = (char *)malloc(
+        (strlen(function_name) + strlen(type_param) + strlen(type_arg) + strlen(arg_name) + strlen(param_name) + 1 + 117) * sizeof(char)
+    ); // +1 for the null-terminator and 117 for semantic error message
+    sprintf(error, "semantic error, type mismatch between argument (%s) of type %s and param (%s) of type %s during call of function (%s)", arg_name, type_arg, param_name, type_param, function_name);
+    yyerror(error);
+    free(error);
+}
+
+// Cria lista de argumentos a partir de um nó da árvore
+args_node* create_args_list(node* no){
+    args_node* args_list = NULL;
+    args_node* arg_atual = NULL;
+    node* no_atual = no;
+
+    // Monta lista de argumentos
+    if(no != NULL){
+        if(no_atual->node_class == ARGS_LIST){
+            // Destrincha ARGS_lIST
+            while(no_atual->node_class == ARGS_LIST){
+                // Esquerda
+                args_node *a = (args_node *)malloc(sizeof *a);
+                a->name = no_atual->left->value;
+                a->type = no_atual->left->type;
+                a->next = NULL;
+                if(args_list == NULL){
+                    args_list = a;
+                    arg_atual = args_list;
+                }
+                else{
+                    arg_atual->next = a;
+                    arg_atual = arg_atual-> next;
+                }
+                // Direita no fim
+                if(no_atual->right->node_class != ARGS_LIST){
+                    args_node *a = (args_node *)malloc(sizeof *a);
+                    a->name = no_atual->right->value;
+                    a->type = no_atual->right->type;
+                    a->next = NULL;
+                    arg_atual->next = a;
+                    arg_atual = arg_atual-> next;
+                }
+                no_atual = no_atual->right;
+            }
+        }
+        // Nó unico
+        else{
+            args_node *a = (args_node *)malloc(sizeof *a);
+            a->name = no->value;
+            a->type = no->type;
+            a->next = NULL;
+            args_list = a;
+        }
+    }
+    return args_list;
+}
+
+// Checa erro semantico de tipo incompatível para argumentos
+void check_semantic_error_type_mismatch_args(node* no, char* function_name){
+    args_node* args_list = create_args_list(no);
+    args_node* arg_atual = NULL;
+    int number_args = 0;
+    int number_param = 0;
+    param_node* param_list = NULL;
+    param_node* param_atual = NULL;
+
+    // Pega params_list    
+    symbol_node* f;
+    char* key = concat(function_name, stack->scope_name);
+    HASH_FIND_STR(symbol_table, key, f);
+    if(f != NULL){
+        param_list = f->param_list;
+    }
+
+    // Conta número de arumentos e parametros
+    arg_atual = args_list;
+    while(arg_atual != NULL){
+        number_args++;
+        arg_atual = arg_atual->next;
+    }
+    param_atual = param_list;
+    while(param_atual != NULL){
+        number_param++;
+        param_atual = param_atual->next;
+    }
+
+    // Checa pelos erros
+    if(number_args != number_param){
+        // Numero errado de argumentos
+        semantic_error_wrong_number_arguments(function_name, number_args, number_param);
+    }
+    else{
+        symbol_node* s;
+        arg_atual = args_list;
+        param_atual = param_list;
+        while(arg_atual != NULL){
+            HASH_FIND_STR(symbol_table, param_atual->key, s);
+            if(s != NULL){
+                if(
+                    arg_atual->type != NULL &&
+                    s->type != NULL &&
+                    (strcmp(arg_atual->type, s->type) != 0)
+                ){
+                    // type mismatch
+                    semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, s->name, s->type);
+                }
+            }
+            arg_atual = arg_atual->next;
+            param_atual = param_atual->next;
+        }
+    }
+}
+
+// Cria lista de parâmetros esperada para funções nativas
+args_node* create_param_list_native_function(char* function_name){
+    args_node* param_list = NULL;
+    int param_type = -1;
+    if(
+        (strcmp(function_name, "strUpper") == 0)||
+        (strcmp(function_name, "strLower") == 0)
+    ){
+        param_type = 1;
+    }
+    else if(
+        (strcmp(function_name, "strConcat") == 0)||
+        (strcmp(function_name, "strCopy") == 0)
+    ){
+        param_type = 2;
+    }
+    else if((strcmp(function_name, "strInsert") == 0)){
+        param_type = 3;
+    }
+
+    if(param_type != -1){
+        args_node *a = (args_node *)malloc(sizeof *a);
+        a->name = "string1";
+        a->type = "string";
+        a->next = NULL;
+        param_list = a;
+    }
+
+    if(param_type == 2 || param_type == 3){
+        args_node *a2 = (args_node *)malloc(sizeof *a2);
+        a2->name = "string2";
+        a2->type = "string";
+        a2->next = NULL;
+        param_list->next = a2;
+    }
+
+    if(param_type == 3){
+        args_node *a3 = (args_node *)malloc(sizeof *a3);
+        a3-> name = "int1";
+        a3->type = "int";
+        a3->next = NULL;
+        param_list->next->next = a3;
+    }
+
+    return param_list;
+}
+
+// Checa type mismatch para args de função nativa
+void check_semantic_error_type_mismatch_args_native_function(node* no, char* function_name){
+    args_node* args_list = create_args_list(no);
+    args_node* arg_atual = NULL;
+    int number_args = 0;
+    int number_param = 0;
+    args_node* param_list = create_param_list_native_function(function_name);
+    args_node* param_atual = NULL;
+
+    // Conta número de arumentos e parametros
+    arg_atual = args_list;
+    while(arg_atual != NULL){
+        number_args++;
+        arg_atual = arg_atual->next;
+    }
+    param_atual = param_list;
+    while(param_atual != NULL){
+        number_param++;
+        param_atual = param_atual->next;
+    }
+
+    // Checa pelos erros
+    if(number_args != number_param){
+        // Numero errado de argumentos
+        semantic_error_wrong_number_arguments(function_name, number_args, number_param);
+    }
+    else{
+        arg_atual = args_list;
+        param_atual = param_list;
+        while(arg_atual != NULL){
+            if(
+                arg_atual->type != NULL &&
+                param_atual->type != NULL &&
+                (strcmp(arg_atual->type, param_atual->type) != 0)
+            ){
+                // type mismatch
+                semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, param_atual->name, param_atual->type);
+            }
+            arg_atual = arg_atual->next;
+            param_atual = param_atual->next;
+        }
+    }
+}
+
+// Erro semantico de main não declarada
+void semantic_error_no_main(){
+    char *error = (char *)malloc(
+        (1 + 47) * sizeof(char)
+    ); // +1 for the null-terminator and 47 for semantic error message
+    sprintf(error, "semantic error, no declaration of function main");
+    yyerror(error);
+    free(error);
+}
+
+// Checa erro semântico de main não declarada
+void check_semantic_error_no_main(){
+    symbol_node* s;
+    char* key = concat("main", stack->scope_name);
+    HASH_FIND_STR(symbol_table, key, s);
+    if(s == NULL){
+        semantic_error_no_main();
+    }
+}
+
 int main(int argc, char **argv) {
     ++argv, --argc;
     if(argc > 0)
@@ -851,12 +1181,12 @@ int main(int argc, char **argv) {
         yyin = stdin;
     initialize_global_scope();
     yyparse();
-    yylex_destroy();
     if(total_errors == 0){
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
         print_symbol_table();
     }
+    yylex_destroy();
     free_tree(parser_tree);
     free_symbol_table();
     return 0;

@@ -73,7 +73,7 @@ Gramática
    50 args: arg-list
    51     | %empty
 
-   52 arg-list: arg-list ',' simple-expr
+   52 arg-list: simple-expr ',' arg-list
    53         | simple-expr
 
    54 string: string STR
@@ -1017,7 +1017,10 @@ Estado 73
 
 Estado 74
 
-   53 arg-list: simple-expr .
+   52 arg-list: simple-expr . ',' arg-list
+   53         | simple-expr .
+
+    ','  deslocar, e ir ao estado 96
 
     $padrão  reduzir usando a regra 53 (arg-list)
 
@@ -1026,15 +1029,12 @@ Estado 75
 
    44 call: ID '(' args . ')'
 
-    ')'  deslocar, e ir ao estado 96
+    ')'  deslocar, e ir ao estado 97
 
 
 Estado 76
 
    50 args: arg-list .
-   52 arg-list: arg-list . ',' simple-expr
-
-    ','  deslocar, e ir ao estado 97
 
     $padrão  reduzir usando a regra 50 (args)
 
@@ -1182,14 +1182,7 @@ Estado 95
 
 Estado 96
 
-   44 call: ID '(' args ')' .
-
-    $padrão  reduzir usando a regra 44 (call)
-
-
-Estado 97
-
-   52 arg-list: arg-list ',' . simple-expr
+   52 arg-list: simple-expr ',' . arg-list
 
     INT        deslocar, e ir ao estado 26
     FLOAT      deslocar, e ir ao estado 27
@@ -1203,11 +1196,19 @@ Estado 97
     QUOTES     deslocar, e ir ao estado 40
     '('        deslocar, e ir ao estado 41
 
-    simple-expr  ir ao estado 108
+    simple-expr  ir ao estado 74
     var          ir ao estado 59
     op-expr      ir ao estado 50
     term         ir ao estado 51
     call         ir ao estado 52
+    arg-list     ir ao estado 108
+
+
+Estado 97
+
+   44 call: ID '(' args ')' .
+
+    $padrão  reduzir usando a regra 44 (call)
 
 
 Estado 98
@@ -1289,7 +1290,7 @@ Estado 107
 
 Estado 108
 
-   52 arg-list: arg-list ',' simple-expr .
+   52 arg-list: simple-expr ',' arg-list .
 
     $padrão  reduzir usando a regra 52 (arg-list)
 
