@@ -41,6 +41,7 @@
 #define STRINSERT_STATEMENT 27
 #define STRUPPER_STATEMENT 28
 #define STRLOWER_STATEMENT 29
+#define LOCAL_DECLARATION_LIST 30
 
 // Extern variables
 int yylex();
@@ -145,7 +146,7 @@ void check_semantic_error_no_main();
 %right <str> ASSIGN
 %left <str> OP RELOP LOG
 
-%type <no> prog decl-list var-decl func params
+%type <no> prog decl-list var-decl func params-list params 
 %type <no> stmt-list comp-stmt stmt local-decl
 %type <no> expr simple-expr conditional-stmt iteration-stmt return-stmt
 %type <no> var op-expr term call args arg-list string
@@ -192,10 +193,21 @@ func:
         add_symbol($2, $1, 'F');
         push_stack($2, $1);
     }
-    '(' params ')' comp-stmt { 
+    '(' params-list ')' comp-stmt { 
         $$ = insert_node(FUNCTION, $5, $7, $1, $2);
         pop_stack();
-        if (DEBUG_MODE) {printf("func %s %s\n", $1, $2);}
+        if (DEBUG_MODE) {printf("func #1 %s %s\n", $1, $2);}
+    }
+;
+
+params-list: 
+    params {
+        $$ = $1;
+        if (DEBUG_MODE) {printf("params-list #1\n");}
+    }
+    | { 
+        $$ = NULL; 
+        if (DEBUG_MODE) {printf("params-list #2\n");}
     }
 ;
 
@@ -210,10 +222,6 @@ params:
         add_symbol($2, $1, 'P');
         if (DEBUG_MODE) {printf("params #2 %s %s\n", $1, $2);}
     }
-    | { 
-        $$ = NULL;
-        if (DEBUG_MODE) {printf("params #3\n");}
-    }
 ;
 
 comp-stmt:
@@ -224,10 +232,9 @@ comp-stmt:
 ;
 
 local-decl:
-    local-decl TYPE ID ';' { 
-        $$ = insert_node(VARIABLE_DECLARATION, $1, NULL, $2, $3);
-        add_symbol($3, $2, 'V');
-        if (DEBUG_MODE) {printf("local-decl #1 %s %s\n", $2, $3);}
+    local-decl var-decl { 
+        $$ = insert_node(LOCAL_DECLARATION_LIST, $1, $2, NULL, NULL);
+        if (DEBUG_MODE) {printf("local-decl #1");}
     }
     | { 
         $$ = NULL; 
@@ -572,6 +579,9 @@ void print_class(int node_class){
         break;
         case STRLOWER_STATEMENT:
             printf("STRLOWER");
+        break;
+        case LOCAL_DECLARATION_LIST:
+            printf("LOCAL_DECLARATION_LIST");
         break;
     }
     printf(" | ");
