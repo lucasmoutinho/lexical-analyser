@@ -3154,10 +3154,10 @@ int main(int argc, char **argv) {
         yyin = stdin;
     initialize_global_scope();
     yyparse();
+    print_symbol_table();
     if(total_errors == 0){
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
-        print_symbol_table();
     }
     yylex_destroy();
     free_tree(parser_tree);
