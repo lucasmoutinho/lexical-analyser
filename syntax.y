@@ -112,9 +112,10 @@ void semantic_error_redeclaration(char* name, char* scope);
 void semantic_error_not_declared(char* name);
 void semantic_error_type_mismatch(char* type_left, char* type_right);
 symbol_node* find_symbol(char* name);
+void add_implicit_conversion(node *no, char* func_type);
 void define_type(node* no);
 void semantic_error_return_type(char* return_type, char* type);
-void check_semantic_error_return_type(char* return_type);
+void check_semantic_error_return_type(char* return_type, node* no);
 void semantic_error_relop_type(char* value);
 void check_semantic_error_relop_type(node* no);
 void semantic_error_op_type(char* value);
@@ -332,12 +333,12 @@ return-stmt:
     RETURN simple-expr ';' { 
         $$ = insert_node(RETURN_STATEMENT, $2, NULL, NULL, $1); 
         define_type($$);
-        check_semantic_error_return_type($$->type);
+        check_semantic_error_return_type($$->type, $$);
         if (DEBUG_MODE) {printf("return-stmt #1 %s\n", $1);}
     }
     | RETURN ';' { 
         $$ = insert_node(RETURN_STATEMENT, NULL, NULL, "void", $1); 
-        check_semantic_error_return_type($$->type);
+        check_semantic_error_return_type($$->type, $$);
         if (DEBUG_MODE) {printf("return-stmt #2 %s\n", $1);}
     }
 ;
@@ -808,21 +809,33 @@ void semantic_error_type_mismatch(char* type_left, char* type_right){
 
 // Adiciona nó de conversão implícita na árvore.
 // 
-void add_implicit_conversion(node *no){
+void add_implicit_conversion(node *no, char* func_type){
     node* conversion_node;
-    if(strcmp(no->left->type, "int") == 0 && strcmp(no->right->type, "float") == 0){
-        if(no->node_class == ASSIGN_EXPRESSION){
-            conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
-            no->right = conversion_node;
+    if(no->node_class == RETURN_STATEMENT){
+        if(strcmp(no->left->type, "int") == 0 && strcmp(func_type, "float") == 0){
+            conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+            no->left = conversion_node;
         }
         else{
-            conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+            conversion_node = insert_node(FLOAT_TO_INT, no->left, NULL, "int", NULL); 
             no->left = conversion_node;
         }
     }
     else{
-        conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
-        no->right = conversion_node;
+        if(strcmp(no->left->type, "int") == 0 && strcmp(no->right->type, "float") == 0){
+            if(no->node_class == ASSIGN_EXPRESSION){
+                conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
+                no->right = conversion_node;
+            }
+            else{
+                conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+                no->left = conversion_node;
+            }
+        }
+        else{
+            conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
+            no->right = conversion_node;
+        }
     }
 }
 
@@ -841,7 +854,7 @@ void define_type(node* no){
             (strcmp(type_left, "int") == 0 && strcmp(type_right, "float") == 0) || 
             (strcmp(type_left, "float") == 0 && strcmp(type_right, "int") == 0)
         ){
-            add_implicit_conversion(no);
+            add_implicit_conversion(no, NULL);
             type_left = no->left->type;
         }
         else{ // type mismatch -- no implicit conversion
@@ -876,7 +889,7 @@ void semantic_error_return_in_void(char* type){
     free(error);
 }
 
-void check_semantic_error_return_type(char* return_type){
+void check_semantic_error_return_type(char* return_type, node* no){
     symbol_node *s;
     scope* scope = get_stack_head();
     char* function_name = scope->scope_name;
@@ -887,7 +900,14 @@ void check_semantic_error_return_type(char* return_type){
             if(strcmp("void", s->type) == 0){
                 semantic_error_return_in_void(return_type);
             }
-            else{
+            else if( // type mismatch -- implicit conversion
+                (strcmp(return_type, "int") == 0 && strcmp(s->type, "float") == 0) || 
+                (strcmp(return_type, "float") == 0 && strcmp(s->type, "int") == 0)
+            ){
+                add_implicit_conversion(no, s->type);
+                no->type = no->left->type;
+            }
+            else{ // type mismatch -- no implicit conversion
                 semantic_error_return_type(return_type, s->type);
             }
         }
