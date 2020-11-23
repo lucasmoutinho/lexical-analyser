@@ -195,9 +195,11 @@ args_node* create_param_list_native_function(char* function_name);
 void check_semantic_error_type_mismatch_args_native_function(node* no, char* function_name);
 void semantic_error_no_main();
 void check_semantic_error_no_main();
+node* find_arg(node* no, int i, int number_args, int* direction);
+void add_implicit_args_conversion(node *no, char* expected_type, int direction);
 
 
-#line 201 "syntax.tab.c"
+#line 203 "syntax.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -652,12 +654,12 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   158,   158,   166,   170,   174,   178,   185,   193,   193,
-     205,   209,   216,   221,   229,   236,   240,   247,   251,   258,
-     262,   266,   270,   274,   278,   282,   289,   294,   301,   307,
-     314,   318,   326,   333,   339,   347,   360,   366,   371,   379,
-     383,   387,   391,   395,   399,   403,   410,   420,   425,   430,
-     435,   440,   448,   452,   460,   464,   471,   475
+       0,   160,   160,   168,   172,   176,   180,   187,   195,   195,
+     207,   211,   218,   223,   231,   238,   242,   249,   253,   260,
+     264,   268,   272,   276,   280,   284,   291,   296,   303,   309,
+     316,   320,   328,   335,   341,   349,   362,   368,   373,   381,
+     385,   389,   393,   397,   401,   405,   412,   422,   427,   432,
+     437,   442,   450,   454,   462,   466,   473,   477
 };
 #endif
 
@@ -1673,316 +1675,316 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* prog: decl-list  */
-#line 158 "syntax.y"
+#line 160 "syntax.y"
               { 
         parser_tree = (yyvsp[0].no);
         check_semantic_error_no_main();
         if (DEBUG_MODE) {printf("prog\n");}
     }
-#line 1683 "syntax.tab.c"
+#line 1685 "syntax.tab.c"
     break;
 
   case 3: /* decl-list: decl-list var-decl  */
-#line 166 "syntax.y"
+#line 168 "syntax.y"
                        { 
         (yyval.no) = insert_node(DECLARATION_LIST, (yyvsp[-1].no), (yyvsp[0].no), NULL, NULL);
         if (DEBUG_MODE) {printf("decl-list #1\n");} 
     }
-#line 1692 "syntax.tab.c"
+#line 1694 "syntax.tab.c"
     break;
 
   case 4: /* decl-list: var-decl  */
-#line 170 "syntax.y"
+#line 172 "syntax.y"
                { 
         (yyval.no) = (yyvsp[0].no);
         if (DEBUG_MODE) {printf("decl-list #2\n");}
     }
-#line 1701 "syntax.tab.c"
+#line 1703 "syntax.tab.c"
     break;
 
   case 5: /* decl-list: decl-list func  */
-#line 174 "syntax.y"
+#line 176 "syntax.y"
                      { 
         (yyval.no) = insert_node(DECLARATION_LIST, (yyvsp[-1].no), (yyvsp[0].no), NULL, NULL);
         if (DEBUG_MODE) {printf("decl-list #3\n");} 
     }
-#line 1710 "syntax.tab.c"
+#line 1712 "syntax.tab.c"
     break;
 
   case 6: /* decl-list: func  */
-#line 178 "syntax.y"
+#line 180 "syntax.y"
            { 
         (yyval.no) = (yyvsp[0].no);
         if (DEBUG_MODE) {printf("decl-list #4\n");}
     }
-#line 1719 "syntax.tab.c"
+#line 1721 "syntax.tab.c"
     break;
 
   case 7: /* var-decl: TYPE ID ';'  */
-#line 185 "syntax.y"
+#line 187 "syntax.y"
                 { 
         (yyval.no) = insert_node(VARIABLE_DECLARATION, NULL, NULL, (yyvsp[-2].str), (yyvsp[-1].str));
         add_symbol((yyvsp[-1].str), (yyvsp[-2].str), 'V');
         if (DEBUG_MODE) {printf("var-decl %s %s\n", (yyvsp[-2].str), (yyvsp[-1].str));}
     }
-#line 1729 "syntax.tab.c"
+#line 1731 "syntax.tab.c"
     break;
 
   case 8: /* $@1: %empty  */
-#line 193 "syntax.y"
+#line 195 "syntax.y"
             { 
         add_symbol((yyvsp[0].str), (yyvsp[-1].str), 'F');
         push_stack((yyvsp[0].str), (yyvsp[-1].str));
     }
-#line 1738 "syntax.tab.c"
+#line 1740 "syntax.tab.c"
     break;
 
   case 9: /* func: TYPE ID $@1 '(' params-list ')' comp-stmt  */
-#line 197 "syntax.y"
+#line 199 "syntax.y"
                                   { 
         (yyval.no) = insert_node(FUNCTION, (yyvsp[-2].no), (yyvsp[0].no), (yyvsp[-6].str), (yyvsp[-5].str));
         pop_stack();
         if (DEBUG_MODE) {printf("func #1 %s %s\n", (yyvsp[-6].str), (yyvsp[-5].str));}
     }
-#line 1748 "syntax.tab.c"
+#line 1750 "syntax.tab.c"
     break;
 
   case 10: /* params-list: params  */
-#line 205 "syntax.y"
+#line 207 "syntax.y"
            {
         (yyval.no) = (yyvsp[0].no);
         if (DEBUG_MODE) {printf("params-list #1\n");}
     }
-#line 1757 "syntax.tab.c"
+#line 1759 "syntax.tab.c"
     break;
 
   case 11: /* params-list: %empty  */
-#line 209 "syntax.y"
+#line 211 "syntax.y"
       { 
         (yyval.no) = NULL; 
         if (DEBUG_MODE) {printf("params-list #2\n");}
     }
-#line 1766 "syntax.tab.c"
+#line 1768 "syntax.tab.c"
     break;
 
   case 12: /* params: params ',' TYPE ID  */
-#line 216 "syntax.y"
+#line 218 "syntax.y"
                        { 
         (yyval.no) = insert_node(PARAMETER, (yyvsp[-3].no), NULL, (yyvsp[-1].str), (yyvsp[0].str));
         add_symbol((yyvsp[0].str), (yyvsp[-1].str), 'P');
         if (DEBUG_MODE) {printf("params #1 %s %s\n", (yyvsp[-1].str), (yyvsp[0].str));}
     }
-#line 1776 "syntax.tab.c"
+#line 1778 "syntax.tab.c"
     break;
 
   case 13: /* params: TYPE ID  */
-#line 221 "syntax.y"
+#line 223 "syntax.y"
               { 
         (yyval.no) = insert_node(PARAMETER, NULL, NULL, (yyvsp[-1].str), (yyvsp[0].str));
         add_symbol((yyvsp[0].str), (yyvsp[-1].str), 'P');
         if (DEBUG_MODE) {printf("params #2 %s %s\n", (yyvsp[-1].str), (yyvsp[0].str));}
     }
-#line 1786 "syntax.tab.c"
+#line 1788 "syntax.tab.c"
     break;
 
   case 14: /* comp-stmt: '{' local-decl stmt-list '}'  */
-#line 229 "syntax.y"
+#line 231 "syntax.y"
                                  { 
         (yyval.no) = insert_node(COMPOUND_STATEMENT, (yyvsp[-2].no), (yyvsp[-1].no), NULL, NULL);
         if (DEBUG_MODE) {printf("comp-stmt\n");}
     }
-#line 1795 "syntax.tab.c"
+#line 1797 "syntax.tab.c"
     break;
 
   case 15: /* local-decl: local-decl var-decl  */
-#line 236 "syntax.y"
+#line 238 "syntax.y"
                         { 
         (yyval.no) = insert_node(LOCAL_DECLARATION_LIST, (yyvsp[-1].no), (yyvsp[0].no), NULL, NULL);
         if (DEBUG_MODE) {printf("local-decl #1");}
     }
-#line 1804 "syntax.tab.c"
+#line 1806 "syntax.tab.c"
     break;
 
   case 16: /* local-decl: %empty  */
-#line 240 "syntax.y"
+#line 242 "syntax.y"
       { 
         (yyval.no) = NULL; 
         if (DEBUG_MODE) {printf("local-decl #2\n");}
     }
-#line 1813 "syntax.tab.c"
+#line 1815 "syntax.tab.c"
     break;
 
   case 17: /* stmt-list: stmt-list stmt  */
-#line 247 "syntax.y"
+#line 249 "syntax.y"
                    { 
         (yyval.no) = insert_node(STATEMENT_LIST, (yyvsp[-1].no), (yyvsp[0].no), NULL, NULL);
         if (DEBUG_MODE) {printf("stmt-list #1\n");}
     }
-#line 1822 "syntax.tab.c"
+#line 1824 "syntax.tab.c"
     break;
 
   case 18: /* stmt-list: %empty  */
-#line 251 "syntax.y"
+#line 253 "syntax.y"
       { 
         (yyval.no) = NULL; 
         if (DEBUG_MODE) {printf("stmt-list #2\n");} 
     }
-#line 1831 "syntax.tab.c"
+#line 1833 "syntax.tab.c"
     break;
 
   case 19: /* stmt: expr  */
-#line 258 "syntax.y"
+#line 260 "syntax.y"
          { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("stmt #1\n");} 
     }
-#line 1840 "syntax.tab.c"
+#line 1842 "syntax.tab.c"
     break;
 
   case 20: /* stmt: conditional-stmt  */
-#line 262 "syntax.y"
+#line 264 "syntax.y"
                        { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("stmt #2\n");} 
     }
-#line 1849 "syntax.tab.c"
+#line 1851 "syntax.tab.c"
     break;
 
   case 21: /* stmt: iteration-stmt  */
-#line 266 "syntax.y"
+#line 268 "syntax.y"
                      { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("stmt #3\n");}
     }
-#line 1858 "syntax.tab.c"
+#line 1860 "syntax.tab.c"
     break;
 
   case 22: /* stmt: return-stmt  */
-#line 270 "syntax.y"
+#line 272 "syntax.y"
                   {
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("stmt #4\n");}
     }
-#line 1867 "syntax.tab.c"
+#line 1869 "syntax.tab.c"
     break;
 
   case 23: /* stmt: PRINT '(' QUOTES string QUOTES ')' ';'  */
-#line 274 "syntax.y"
+#line 276 "syntax.y"
                                              { 
         (yyval.no) = insert_node(PRINT_STATEMENT, (yyvsp[-3].no), NULL, "void", (yyvsp[-6].str));
         if (DEBUG_MODE) {printf("stmt #5 %s\n", (yyvsp[-6].str));}
     }
-#line 1876 "syntax.tab.c"
+#line 1878 "syntax.tab.c"
     break;
 
   case 24: /* stmt: PRINT '(' var ')' ';'  */
-#line 278 "syntax.y"
+#line 280 "syntax.y"
                             { 
         (yyval.no) = insert_node(PRINT_STATEMENT, (yyvsp[-2].no), NULL, "void", (yyvsp[-4].str)); 
         if (DEBUG_MODE) {printf("stmt #6 %s\n", (yyvsp[-4].str));} 
     }
-#line 1885 "syntax.tab.c"
+#line 1887 "syntax.tab.c"
     break;
 
   case 25: /* stmt: SCAN '(' var ')' ';'  */
-#line 282 "syntax.y"
+#line 284 "syntax.y"
                            { 
         (yyval.no) = insert_node(SCAN_STATEMENT, (yyvsp[-2].no), NULL, "void", (yyvsp[-4].str)); 
         if (DEBUG_MODE) {printf("stmt #7 %s\n", (yyvsp[-4].str));}
     }
-#line 1894 "syntax.tab.c"
+#line 1896 "syntax.tab.c"
     break;
 
   case 26: /* expr: var ASSIGN expr  */
-#line 289 "syntax.y"
+#line 291 "syntax.y"
                     { 
         (yyval.no) = insert_node(ASSIGN_EXPRESSION, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str));
         define_type((yyval.no));
         if (DEBUG_MODE) {printf("expr #1 %s\n", (yyvsp[-1].str));} 
     }
-#line 1904 "syntax.tab.c"
+#line 1906 "syntax.tab.c"
     break;
 
   case 27: /* expr: simple-expr ';'  */
-#line 294 "syntax.y"
+#line 296 "syntax.y"
                       { 
         (yyval.no) = (yyvsp[-1].no); 
         if (DEBUG_MODE) {printf("expr #2\n");}
     }
-#line 1913 "syntax.tab.c"
+#line 1915 "syntax.tab.c"
     break;
 
   case 28: /* simple-expr: op-expr RELOP op-expr  */
-#line 301 "syntax.y"
+#line 303 "syntax.y"
                           { 
         (yyval.no) = insert_node(RELATIONAL_EXPRESSION, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str));
         define_type((yyval.no));
         check_semantic_error_relop_type((yyval.no));
         if (DEBUG_MODE) {printf("simple-expr #1 %s\n", (yyvsp[-1].str));}
     }
-#line 1924 "syntax.tab.c"
+#line 1926 "syntax.tab.c"
     break;
 
   case 29: /* simple-expr: op-expr  */
-#line 307 "syntax.y"
+#line 309 "syntax.y"
               { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("simple-expr #2\n");}
     }
-#line 1933 "syntax.tab.c"
+#line 1935 "syntax.tab.c"
     break;
 
   case 30: /* conditional-stmt: IF '(' simple-expr ')' comp-stmt  */
-#line 314 "syntax.y"
+#line 316 "syntax.y"
                                      { 
         (yyval.no) = insert_node(CONDITIONAL_STATEMENT, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-4].str));
         if (DEBUG_MODE) {printf("conditional-stmt #1 %s\n", (yyvsp[-4].str));}
     }
-#line 1942 "syntax.tab.c"
+#line 1944 "syntax.tab.c"
     break;
 
   case 31: /* conditional-stmt: IF '(' simple-expr ')' comp-stmt ELSE comp-stmt  */
-#line 318 "syntax.y"
+#line 320 "syntax.y"
                                                       {
         node* aux_node = insert_node(CONDITIONAL_STATEMENT, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str));
         (yyval.no) = insert_node(CONDITIONAL_STATEMENT, (yyvsp[-4].no), aux_node, NULL, (yyvsp[-6].str));
         if (DEBUG_MODE) {printf("conditional-stmt #2 %s\n", (yyvsp[-6].str));}
     }
-#line 1952 "syntax.tab.c"
+#line 1954 "syntax.tab.c"
     break;
 
   case 32: /* iteration-stmt: WHILE '(' simple-expr ')' comp-stmt  */
-#line 326 "syntax.y"
+#line 328 "syntax.y"
                                         { 
         (yyval.no) = insert_node(ITERATION_STATEMENT, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-4].str));
         if (DEBUG_MODE) {printf("iteration-stmt %s\n", (yyvsp[-4].str));}
     }
-#line 1961 "syntax.tab.c"
+#line 1963 "syntax.tab.c"
     break;
 
   case 33: /* return-stmt: RETURN simple-expr ';'  */
-#line 333 "syntax.y"
+#line 335 "syntax.y"
                            { 
         (yyval.no) = insert_node(RETURN_STATEMENT, (yyvsp[-1].no), NULL, NULL, (yyvsp[-2].str)); 
         define_type((yyval.no));
         check_semantic_error_return_type((yyval.no)->type, (yyval.no));
         if (DEBUG_MODE) {printf("return-stmt #1 %s\n", (yyvsp[-2].str));}
     }
-#line 1972 "syntax.tab.c"
+#line 1974 "syntax.tab.c"
     break;
 
   case 34: /* return-stmt: RETURN ';'  */
-#line 339 "syntax.y"
+#line 341 "syntax.y"
                  { 
         (yyval.no) = insert_node(RETURN_STATEMENT, NULL, NULL, "void", (yyvsp[-1].str)); 
         check_semantic_error_return_type((yyval.no)->type, (yyval.no));
         if (DEBUG_MODE) {printf("return-stmt #2 %s\n", (yyvsp[-1].str));}
     }
-#line 1982 "syntax.tab.c"
+#line 1984 "syntax.tab.c"
     break;
 
   case 35: /* var: ID  */
-#line 347 "syntax.y"
+#line 349 "syntax.y"
        { 
         symbol_node* s = find_symbol((yyvsp[0].str));
         char* type = NULL;
@@ -1992,104 +1994,104 @@ yyreduce:
         (yyval.no) = insert_node(VARIABLE, NULL, NULL, type, (yyvsp[0].str));
         if (DEBUG_MODE) {printf("var %s\n", (yyvsp[0].str));}
     }
-#line 1996 "syntax.tab.c"
+#line 1998 "syntax.tab.c"
     break;
 
   case 36: /* op-expr: op-expr OP term  */
-#line 360 "syntax.y"
+#line 362 "syntax.y"
                     {
         (yyval.no) = insert_node(ARITHIMETIC_EXPRESSION, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str));
         define_type((yyval.no));
         check_semantic_error_op_type((yyval.no));
         if (DEBUG_MODE) {printf("op-expr #1 %s\n", (yyvsp[-1].str));}
     }
-#line 2007 "syntax.tab.c"
+#line 2009 "syntax.tab.c"
     break;
 
   case 37: /* op-expr: op-expr LOG term  */
-#line 366 "syntax.y"
+#line 368 "syntax.y"
                        { 
         (yyval.no) = insert_node(LOGICAL_EXPRESSION, (yyvsp[-2].no), (yyvsp[0].no), NULL, (yyvsp[-1].str)); 
         define_type((yyval.no));
         if (DEBUG_MODE) {printf("op-expr #2 %s\n", (yyvsp[-1].str));}
     }
-#line 2017 "syntax.tab.c"
+#line 2019 "syntax.tab.c"
     break;
 
   case 38: /* op-expr: term  */
-#line 371 "syntax.y"
+#line 373 "syntax.y"
            { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("op-expr #3\n");}
     }
-#line 2026 "syntax.tab.c"
+#line 2028 "syntax.tab.c"
     break;
 
   case 39: /* term: '(' simple-expr ')'  */
-#line 379 "syntax.y"
+#line 381 "syntax.y"
                         { 
         (yyval.no) = (yyvsp[-1].no); 
         if (DEBUG_MODE) {printf("term #1\n");}
     }
-#line 2035 "syntax.tab.c"
+#line 2037 "syntax.tab.c"
     break;
 
   case 40: /* term: var  */
-#line 383 "syntax.y"
+#line 385 "syntax.y"
           { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("term #2\n");}
     }
-#line 2044 "syntax.tab.c"
+#line 2046 "syntax.tab.c"
     break;
 
   case 41: /* term: call  */
-#line 387 "syntax.y"
+#line 389 "syntax.y"
            { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("term #3\n");}
     }
-#line 2053 "syntax.tab.c"
+#line 2055 "syntax.tab.c"
     break;
 
   case 42: /* term: QUOTES string QUOTES  */
-#line 391 "syntax.y"
+#line 393 "syntax.y"
                            { 
         (yyval.no) = (yyvsp[-1].no); 
         if (DEBUG_MODE) {printf("term #4\n");}
     }
-#line 2062 "syntax.tab.c"
+#line 2064 "syntax.tab.c"
     break;
 
   case 43: /* term: INT  */
-#line 395 "syntax.y"
+#line 397 "syntax.y"
           { 
         (yyval.no) = insert_node(INTEGER, NULL, NULL, "int", (yyvsp[0].str)); 
         if (DEBUG_MODE) {printf("term #5 %s\n", (yyvsp[0].str));}
     }
-#line 2071 "syntax.tab.c"
+#line 2073 "syntax.tab.c"
     break;
 
   case 44: /* term: FLOAT  */
-#line 399 "syntax.y"
+#line 401 "syntax.y"
             { 
         (yyval.no) = insert_node(FLOATNUMBER, NULL, NULL, "float", (yyvsp[0].str)); 
         if (DEBUG_MODE) {printf("term #6 %s\n", (yyvsp[0].str));}
     }
-#line 2080 "syntax.tab.c"
+#line 2082 "syntax.tab.c"
     break;
 
   case 45: /* term: BOOL  */
-#line 403 "syntax.y"
+#line 405 "syntax.y"
            { 
         (yyval.no) = insert_node(BOOLEAN, NULL, NULL, "bool", (yyvsp[0].str)); 
         if (DEBUG_MODE) {printf("term #7 %s\n", (yyvsp[0].str));}
     }
-#line 2089 "syntax.tab.c"
+#line 2091 "syntax.tab.c"
     break;
 
   case 46: /* call: ID '(' args ')'  */
-#line 410 "syntax.y"
+#line 412 "syntax.y"
                     {
         symbol_node* s = find_symbol((yyvsp[-3].str));
         char* type = NULL;
@@ -2100,115 +2102,115 @@ yyreduce:
         check_semantic_error_type_mismatch_args((yyvsp[-1].no), (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #1 %s\n", (yyvsp[-3].str));}
     }
-#line 2104 "syntax.tab.c"
+#line 2106 "syntax.tab.c"
     break;
 
   case 47: /* call: STRCONCAT '(' args ')'  */
-#line 420 "syntax.y"
+#line 422 "syntax.y"
                              { 
         (yyval.no) = insert_node(STRCONCAT_STATEMENT, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str)); 
         check_semantic_error_type_mismatch_args_native_function((yyvsp[-1].no), (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #2 %s\n", (yyvsp[-3].str));}
     }
-#line 2114 "syntax.tab.c"
+#line 2116 "syntax.tab.c"
     break;
 
   case 48: /* call: STRCOPY '(' args ')'  */
-#line 425 "syntax.y"
+#line 427 "syntax.y"
                            { 
         (yyval.no) = insert_node(STRCOPY_STATEMENT, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str));
         check_semantic_error_type_mismatch_args_native_function((yyvsp[-1].no), (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #4 %s\n", (yyvsp[-3].str));}
     }
-#line 2124 "syntax.tab.c"
+#line 2126 "syntax.tab.c"
     break;
 
   case 49: /* call: STRINSERT '(' args ')'  */
-#line 430 "syntax.y"
+#line 432 "syntax.y"
                              {  
         (yyval.no) = insert_node(STRINSERT_STATEMENT, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str));
         check_semantic_error_type_mismatch_args_native_function((yyvsp[-1].no), (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #5 %s\n", (yyvsp[-3].str));}
     }
-#line 2134 "syntax.tab.c"
+#line 2136 "syntax.tab.c"
     break;
 
   case 50: /* call: STRUPPER '(' args ')'  */
-#line 435 "syntax.y"
+#line 437 "syntax.y"
                             {  
         (yyval.no) = insert_node(STRUPPER_STATEMENT, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str));
         check_semantic_error_type_mismatch_args_native_function((yyvsp[-1].no), (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #6 %s\n", (yyvsp[-3].str));}
     }
-#line 2144 "syntax.tab.c"
+#line 2146 "syntax.tab.c"
     break;
 
   case 51: /* call: STRLOWER '(' args ')'  */
-#line 440 "syntax.y"
+#line 442 "syntax.y"
                             {  
         (yyval.no) = insert_node(STRLOWER_STATEMENT, (yyvsp[-1].no), NULL, "string", (yyvsp[-3].str));
         check_semantic_error_type_mismatch_args_native_function((yyvsp[-1].no), (yyvsp[-3].str));
         if (DEBUG_MODE) {printf("call #7 %s\n", (yyvsp[-3].str));}
     }
-#line 2154 "syntax.tab.c"
+#line 2156 "syntax.tab.c"
     break;
 
   case 52: /* args: arg-list  */
-#line 448 "syntax.y"
+#line 450 "syntax.y"
              { 
         (yyval.no) = (yyvsp[0].no);
         if (DEBUG_MODE) {printf("args #1\n");}
     }
-#line 2163 "syntax.tab.c"
+#line 2165 "syntax.tab.c"
     break;
 
   case 53: /* args: %empty  */
-#line 452 "syntax.y"
+#line 454 "syntax.y"
       { 
         (yyval.no) = NULL;
         if (DEBUG_MODE) {printf("args #2\n");}
     }
-#line 2172 "syntax.tab.c"
+#line 2174 "syntax.tab.c"
     break;
 
   case 54: /* arg-list: simple-expr ',' arg-list  */
-#line 460 "syntax.y"
+#line 462 "syntax.y"
                              { 
         (yyval.no) = insert_node(ARGS_LIST, (yyvsp[-2].no), (yyvsp[0].no), NULL, NULL); 
         if (DEBUG_MODE) {printf("args-list #1\n");}
     }
-#line 2181 "syntax.tab.c"
+#line 2183 "syntax.tab.c"
     break;
 
   case 55: /* arg-list: simple-expr  */
-#line 464 "syntax.y"
+#line 466 "syntax.y"
                   { 
         (yyval.no) = (yyvsp[0].no); 
         if (DEBUG_MODE) {printf("args-list #2\n");}
     }
-#line 2190 "syntax.tab.c"
+#line 2192 "syntax.tab.c"
     break;
 
   case 56: /* string: string STR  */
-#line 471 "syntax.y"
+#line 473 "syntax.y"
                { 
         (yyval.no) = insert_node(STRING, (yyvsp[-1].no), NULL, "string", (yyvsp[0].str)); 
         if (DEBUG_MODE) {printf("string #1 %s\n", (yyvsp[0].str));}
     }
-#line 2199 "syntax.tab.c"
+#line 2201 "syntax.tab.c"
     break;
 
   case 57: /* string: %empty  */
-#line 475 "syntax.y"
+#line 477 "syntax.y"
       { 
         (yyval.no) = NULL; 
         if (DEBUG_MODE) {printf("string #2\n");}
     }
-#line 2208 "syntax.tab.c"
+#line 2210 "syntax.tab.c"
     break;
 
 
-#line 2212 "syntax.tab.c"
+#line 2214 "syntax.tab.c"
 
       default: break;
     }
@@ -2438,7 +2440,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 479 "syntax.y"
+#line 481 "syntax.y"
 
 
 // Insere Nó
@@ -2999,6 +3001,58 @@ args_node* create_args_list(node* no){
     return args_list;
 }
 
+// Retorno o no da árvore do argumento da posição i
+node* find_arg(node* no, int i, int number_args, int* direction){
+    int j;
+    node* aux = no;
+    if((i == number_args - 1) && (i != 0)){
+
+        j = i - 1;
+    }
+    else{
+        j = i;
+    }
+    while(j > 0){
+        aux = aux->right;
+        j--;
+    }
+    if((i == number_args - 1) && (i != 0)){
+        *direction = 1;
+        return aux;
+    }
+    else{
+        *direction = 0;
+        return aux;
+    }
+}
+
+// Adiciona nó de conversão implícita na árvore para argumentos.
+// 
+void add_implicit_args_conversion(node *no, char* expected_type, int direction){
+    node* conversion_node;
+    if(direction == 0){
+        if(strcmp(no->left->type, "int") == 0 && strcmp(expected_type, "float") == 0){
+            conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+            no->left = conversion_node;
+        }
+        else{
+            conversion_node = insert_node(FLOAT_TO_INT, no->left, NULL, "int", NULL); 
+            no->left = conversion_node;
+        }
+    }
+    else{
+        if(strcmp(no->right->type, "int") == 0 && strcmp(expected_type, "float") == 0){
+            conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
+            no->right = conversion_node;
+        }
+        else{
+            conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
+            no->right = conversion_node;
+        }
+    }
+    
+}
+
 // Checa erro semantico de tipo incompatível para argumentos
 void check_semantic_error_type_mismatch_args(node* no, char* function_name){
     args_node* args_list = create_args_list(no);
@@ -3037,6 +3091,9 @@ void check_semantic_error_type_mismatch_args(node* no, char* function_name){
         symbol_node* s;
         arg_atual = args_list;
         param_atual = param_list;
+        int direction;
+        node* aux;
+        int i = 0;
         while(arg_atual != NULL){
             HASH_FIND_STR(symbol_table, param_atual->key, s);
             if(s != NULL){
@@ -3045,12 +3102,21 @@ void check_semantic_error_type_mismatch_args(node* no, char* function_name){
                     s->type != NULL &&
                     (strcmp(arg_atual->type, s->type) != 0)
                 ){
-                    // type mismatch
-                    semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, s->name, s->type);
+                    if( // type mismatch -- implicit conversion
+                        (strcmp(arg_atual->type, "int") == 0 && strcmp(s->type, "float") == 0) || 
+                        (strcmp(arg_atual->type, "float") == 0 && strcmp(s->type, "int") == 0)
+                    ){
+                        aux = find_arg(no, i, number_args, &direction);
+                        add_implicit_args_conversion(aux, s->type, direction);
+                    }
+                    else{// type mismatch
+                        semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, s->name, s->type);
+                    }
                 }
             }
             arg_atual = arg_atual->next;
             param_atual = param_atual->next;
+            i++;
         }
     }
 }
@@ -3131,17 +3197,29 @@ void check_semantic_error_type_mismatch_args_native_function(node* no, char* fun
     else{
         arg_atual = args_list;
         param_atual = param_list;
+        int direction;
+        node* aux;
+        int i = 0;
         while(arg_atual != NULL){
             if(
                 arg_atual->type != NULL &&
                 param_atual->type != NULL &&
                 (strcmp(arg_atual->type, param_atual->type) != 0)
             ){
-                // type mismatch
-                semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, param_atual->name, param_atual->type);
+                if( // type mismatch -- implicit conversion
+                    (strcmp(arg_atual->type, "int") == 0 && strcmp(param_atual->type, "float") == 0) || 
+                    (strcmp(arg_atual->type, "float") == 0 && strcmp(param_atual->type, "int") == 0)
+                ){
+                    aux = find_arg(no, i, number_args, &direction);
+                    add_implicit_args_conversion(aux, param_atual->type, direction);
+                }
+                else{// type mismatch
+                    semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, param_atual->name, param_atual->type);
+                }
             }
             arg_atual = arg_atual->next;
             param_atual = param_atual->next;
+            i++;
         }
     }
 }

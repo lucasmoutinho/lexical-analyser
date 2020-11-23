@@ -129,6 +129,8 @@ args_node* create_param_list_native_function(char* function_name);
 void check_semantic_error_type_mismatch_args_native_function(node* no, char* function_name);
 void semantic_error_no_main();
 void check_semantic_error_no_main();
+node* find_arg(node* no, int i, int number_args, int* direction);
+void add_implicit_args_conversion(node *no, char* expected_type, int direction);
 
 %}
 
@@ -1036,6 +1038,58 @@ args_node* create_args_list(node* no){
     return args_list;
 }
 
+// Retorno o no da árvore do argumento da posição i
+node* find_arg(node* no, int i, int number_args, int* direction){
+    int j;
+    node* aux = no;
+    if((i == number_args - 1) && (i != 0)){
+
+        j = i - 1;
+    }
+    else{
+        j = i;
+    }
+    while(j > 0){
+        aux = aux->right;
+        j--;
+    }
+    if((i == number_args - 1) && (i != 0)){
+        *direction = 1;
+        return aux;
+    }
+    else{
+        *direction = 0;
+        return aux;
+    }
+}
+
+// Adiciona nó de conversão implícita na árvore para argumentos.
+// 
+void add_implicit_args_conversion(node *no, char* expected_type, int direction){
+    node* conversion_node;
+    if(direction == 0){
+        if(strcmp(no->left->type, "int") == 0 && strcmp(expected_type, "float") == 0){
+            conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+            no->left = conversion_node;
+        }
+        else{
+            conversion_node = insert_node(FLOAT_TO_INT, no->left, NULL, "int", NULL); 
+            no->left = conversion_node;
+        }
+    }
+    else{
+        if(strcmp(no->right->type, "int") == 0 && strcmp(expected_type, "float") == 0){
+            conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
+            no->right = conversion_node;
+        }
+        else{
+            conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
+            no->right = conversion_node;
+        }
+    }
+    
+}
+
 // Checa erro semantico de tipo incompatível para argumentos
 void check_semantic_error_type_mismatch_args(node* no, char* function_name){
     args_node* args_list = create_args_list(no);
@@ -1074,6 +1128,9 @@ void check_semantic_error_type_mismatch_args(node* no, char* function_name){
         symbol_node* s;
         arg_atual = args_list;
         param_atual = param_list;
+        int direction;
+        node* aux;
+        int i = 0;
         while(arg_atual != NULL){
             HASH_FIND_STR(symbol_table, param_atual->key, s);
             if(s != NULL){
@@ -1082,12 +1139,21 @@ void check_semantic_error_type_mismatch_args(node* no, char* function_name){
                     s->type != NULL &&
                     (strcmp(arg_atual->type, s->type) != 0)
                 ){
-                    // type mismatch
-                    semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, s->name, s->type);
+                    if( // type mismatch -- implicit conversion
+                        (strcmp(arg_atual->type, "int") == 0 && strcmp(s->type, "float") == 0) || 
+                        (strcmp(arg_atual->type, "float") == 0 && strcmp(s->type, "int") == 0)
+                    ){
+                        aux = find_arg(no, i, number_args, &direction);
+                        add_implicit_args_conversion(aux, s->type, direction);
+                    }
+                    else{// type mismatch
+                        semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, s->name, s->type);
+                    }
                 }
             }
             arg_atual = arg_atual->next;
             param_atual = param_atual->next;
+            i++;
         }
     }
 }
@@ -1168,17 +1234,29 @@ void check_semantic_error_type_mismatch_args_native_function(node* no, char* fun
     else{
         arg_atual = args_list;
         param_atual = param_list;
+        int direction;
+        node* aux;
+        int i = 0;
         while(arg_atual != NULL){
             if(
                 arg_atual->type != NULL &&
                 param_atual->type != NULL &&
                 (strcmp(arg_atual->type, param_atual->type) != 0)
             ){
-                // type mismatch
-                semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, param_atual->name, param_atual->type);
+                if( // type mismatch -- implicit conversion
+                    (strcmp(arg_atual->type, "int") == 0 && strcmp(param_atual->type, "float") == 0) || 
+                    (strcmp(arg_atual->type, "float") == 0 && strcmp(param_atual->type, "int") == 0)
+                ){
+                    aux = find_arg(no, i, number_args, &direction);
+                    add_implicit_args_conversion(aux, param_atual->type, direction);
+                }
+                else{// type mismatch
+                    semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, param_atual->name, param_atual->type);
+                }
             }
             arg_atual = arg_atual->next;
             param_atual = param_atual->next;
+            i++;
         }
     }
 }
