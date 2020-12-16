@@ -1,0 +1,9 @@
+/* Main */
+int main(){
+    string stringTeste;
+    int a;
+    a = 1;
+    print(stringTeste);
+    print(a);
+    return 0;
+}

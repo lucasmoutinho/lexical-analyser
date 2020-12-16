@@ -134,6 +134,8 @@ void add_implicit_args_conversion(node *no, char* expected_type, int direction);
 void create_file_TAC(node* parser_tree);
 void print_symbol_table_TAC(FILE *tac_file);
 void print_code_TAC(node* tree, FILE *tac_file);
+void parse_TAC(node *no, FILE *tac_file);
+char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg3);
 
 %}
 
@@ -355,8 +357,14 @@ var:
         if(s != NULL){
             type = s->type;
         }
-        $$ = insert_node(VARIABLE, NULL, NULL, type, $1);
-        if (DEBUG_MODE) {printf("var %s\n", $1);}
+        // Conversão pra TAC
+        char *aux = (char *)malloc((1 + 100) * sizeof(char));
+        strcpy(aux, s->name);
+        strcat(aux, "__");
+        strcat(aux, s->scope_name);
+        // Conversão pra TAC
+        $$ = insert_node(VARIABLE, NULL, NULL, type, aux);
+        if (DEBUG_MODE) {printf("var %s\n", aux);}
     }
 ;
 
@@ -1290,9 +1298,7 @@ void check_semantic_error_no_main(){
 // Printa tabela de símbolos
 void print_symbol_table_TAC(FILE *tac_file) {
     symbol_node *s;
-    char *aux = (char *)malloc(
-        (1 + 100) * sizeof(char)
-    );
+    char *aux = (char *)malloc((1 + 100) * sizeof(char));
     fputs(".table\n", tac_file);
     for(s=symbol_table; s != NULL; s=s->hh.next) {
         if(s->symbol_type != 'F'){
@@ -1319,8 +1325,63 @@ void print_symbol_table_TAC(FILE *tac_file) {
     free(aux);
 }
 
+char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg3){
+    char *aux = (char *)malloc((1 + 500) * sizeof(char));
+    strcpy(aux, instruction);
+    if(arg1 != NULL){
+        if(
+            (strcmp(instruction, "print") == 0)
+            
+        ){
+            strcat(aux, " ");
+            strcat(aux, "\"");
+            strcat(aux, arg1);
+            strcat(aux, "\"");
+        }
+        else{
+            strcat(aux, " ");
+            strcat(aux, arg1);
+        }
+        if(arg2 != NULL){
+            strcat(aux, ", ");
+            strcat(aux, arg2);
+            if(arg3 != NULL){
+                strcat(aux, ", ");
+                strcat(aux, arg3);
+            }
+        }
+    }
+    strcat(aux, "\n");
+    return aux;
+}
+
+void parse_TAC(node *no, FILE *tac_file){
+    char* aux = NULL;
+    if(no != NULL){
+        switch(no->node_class){
+            case PRINT_STATEMENT:
+                if(no->left->node_class == STRING){
+                    aux = basic_instruction_TAC("print", no->left->value, NULL, NULL);
+                }
+                else{
+                    aux = basic_instruction_TAC("println", no->left->value, NULL, NULL);
+                }
+                break;
+            default:
+                break;
+        }
+        if(aux != NULL){
+            fputs(aux, tac_file);
+            free(aux);
+        }
+        parse_TAC(no->left, tac_file);
+        parse_TAC(no->right, tac_file);
+    }
+}
+
 void print_code_TAC(node* tree, FILE *tac_file){
     fputs(".code\n", tac_file);
+    parse_TAC(tree, tac_file);
     fputs("nop", tac_file);
     fputs("\n", tac_file);
 }
