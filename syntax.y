@@ -1301,6 +1301,9 @@ void print_symbol_table_TAC(FILE *tac_file) {
             strcat(aux, s->name);
             strcat(aux, "@");
             strcat(aux, s->scope_name);
+            if((strcmp(s->type, "string") == 0)){
+                strcat(aux, " [] ");
+            }
             strcat(aux, "\n");
             fputs(aux, tac_file);
         }
@@ -1309,7 +1312,9 @@ void print_symbol_table_TAC(FILE *tac_file) {
 }
 
 void print_code_TAC(node* tree, FILE *tac_file){
-    printf("...");
+    fputs(".code\n", tac_file);
+    fputs("nop", tac_file);
+    fputs("\n", tac_file);
 }
 
 void create_file_TAC(node* parser_tree){

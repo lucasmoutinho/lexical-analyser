@@ -1,12 +1,12 @@
 .table
-string aux@lowerCase
+string aux@lowerCase [] 
 float a@lowerCase
 float d@lowerCase
 float e@lowerCase
 int i@lowerCase
-string b@lowerCase
+string b@lowerCase [] 
 float c@lowerCase
-string stringTeste@main
+string stringTeste@main [] 
 bool always_true@main
 bool result@main
 int i@main
@@ -15,4 +15,3 @@ float a@main
 bool b@main
 .code
 nop
-
