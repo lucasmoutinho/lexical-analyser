@@ -7,11 +7,11 @@ int i__lowerCase
 char b__lowerCase [] = ""
 float c__lowerCase
 char stringTeste__main [] = ""
-bool always_true__main
-bool result__main
+int always_true__main
+int result__main
 int i__main
 int j__main
 float a__main
-bool b__main
+int b__main
 .code
 nop

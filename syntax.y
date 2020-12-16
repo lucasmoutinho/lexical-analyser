@@ -1299,6 +1299,9 @@ void print_symbol_table_TAC(FILE *tac_file) {
             if((strcmp(s->type, "string") == 0)){
                 strcpy(aux, "char");
             }
+            else if ((strcmp(s->type, "bool") == 0)){
+                strcpy(aux, "int");
+            }
             else{
                 strcpy(aux, s->type);
             }
