@@ -6,7 +6,7 @@
 
 - Flex 2.6.4
 - GCC 7.5.0
-- Bison 3.0.4
+- Bison 3.7
 
 ## Compilando e Executando
 

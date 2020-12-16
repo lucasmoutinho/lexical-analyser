@@ -41,6 +41,7 @@
 #define STRINSERT_STATEMENT 27
 #define STRUPPER_STATEMENT 28
 #define STRLOWER_STATEMENT 29
+#define LOCAL_DECLARATION_LIST 30
 
 // Extern variables
 int yylex();
@@ -111,9 +112,10 @@ void semantic_error_redeclaration(char* name, char* scope);
 void semantic_error_not_declared(char* name);
 void semantic_error_type_mismatch(char* type_left, char* type_right);
 symbol_node* find_symbol(char* name);
+void add_implicit_conversion(node *no, char* func_type);
 void define_type(node* no);
 void semantic_error_return_type(char* return_type, char* type);
-void check_semantic_error_return_type(char* return_type);
+void check_semantic_error_return_type(char* return_type, node* no);
 void semantic_error_relop_type(char* value);
 void check_semantic_error_relop_type(node* no);
 void semantic_error_op_type(char* value);
@@ -127,6 +129,11 @@ args_node* create_param_list_native_function(char* function_name);
 void check_semantic_error_type_mismatch_args_native_function(node* no, char* function_name);
 void semantic_error_no_main();
 void check_semantic_error_no_main();
+node* find_arg(node* no, int i, int number_args, int* direction);
+void add_implicit_args_conversion(node *no, char* expected_type, int direction);
+void create_file_TAC(node* parser_tree);
+void print_symbol_table_TAC(FILE *tac_file);
+void print_code_TAC(node* tree, FILE *tac_file);
 
 %}
 
@@ -145,7 +152,7 @@ void check_semantic_error_no_main();
 %right <str> ASSIGN
 %left <str> OP RELOP LOG
 
-%type <no> prog decl-list var-decl func params
+%type <no> prog decl-list var-decl func params-list params 
 %type <no> stmt-list comp-stmt stmt local-decl
 %type <no> expr simple-expr conditional-stmt iteration-stmt return-stmt
 %type <no> var op-expr term call args arg-list string
@@ -192,10 +199,21 @@ func:
         add_symbol($2, $1, 'F');
         push_stack($2, $1);
     }
-    '(' params ')' comp-stmt { 
+    '(' params-list ')' comp-stmt { 
         $$ = insert_node(FUNCTION, $5, $7, $1, $2);
         pop_stack();
-        if (DEBUG_MODE) {printf("func %s %s\n", $1, $2);}
+        if (DEBUG_MODE) {printf("func #1 %s %s\n", $1, $2);}
+    }
+;
+
+params-list: 
+    params {
+        $$ = $1;
+        if (DEBUG_MODE) {printf("params-list #1\n");}
+    }
+    | { 
+        $$ = NULL; 
+        if (DEBUG_MODE) {printf("params-list #2\n");}
     }
 ;
 
@@ -210,10 +228,6 @@ params:
         add_symbol($2, $1, 'P');
         if (DEBUG_MODE) {printf("params #2 %s %s\n", $1, $2);}
     }
-    | { 
-        $$ = NULL;
-        if (DEBUG_MODE) {printf("params #3\n");}
-    }
 ;
 
 comp-stmt:
@@ -224,10 +238,9 @@ comp-stmt:
 ;
 
 local-decl:
-    local-decl TYPE ID ';' { 
-        $$ = insert_node(VARIABLE_DECLARATION, $1, NULL, $2, $3);
-        add_symbol($3, $2, 'V');
-        if (DEBUG_MODE) {printf("local-decl #1 %s %s\n", $2, $3);}
+    local-decl var-decl { 
+        $$ = insert_node(LOCAL_DECLARATION_LIST, $1, $2, NULL, NULL);
+        if (DEBUG_MODE) {printf("local-decl #1");}
     }
     | { 
         $$ = NULL; 
@@ -325,12 +338,12 @@ return-stmt:
     RETURN simple-expr ';' { 
         $$ = insert_node(RETURN_STATEMENT, $2, NULL, NULL, $1); 
         define_type($$);
-        check_semantic_error_return_type($$->type);
+        check_semantic_error_return_type($$->type, $$);
         if (DEBUG_MODE) {printf("return-stmt #1 %s\n", $1);}
     }
     | RETURN ';' { 
         $$ = insert_node(RETURN_STATEMENT, NULL, NULL, "void", $1); 
-        check_semantic_error_return_type($$->type);
+        check_semantic_error_return_type($$->type, $$);
         if (DEBUG_MODE) {printf("return-stmt #2 %s\n", $1);}
     }
 ;
@@ -573,6 +586,9 @@ void print_class(int node_class){
         case STRLOWER_STATEMENT:
             printf("STRLOWER");
         break;
+        case LOCAL_DECLARATION_LIST:
+            printf("LOCAL_DECLARATION_LIST");
+        break;
     }
     printf(" | ");
 }
@@ -798,21 +814,33 @@ void semantic_error_type_mismatch(char* type_left, char* type_right){
 
 // Adiciona nó de conversão implícita na árvore.
 // 
-void add_implicit_conversion(node *no){
+void add_implicit_conversion(node *no, char* func_type){
     node* conversion_node;
-    if(strcmp(no->left->type, "int") == 0 && strcmp(no->right->type, "float") == 0){
-        if(no->node_class == ASSIGN_EXPRESSION){
-            conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
-            no->right = conversion_node;
+    if(no->node_class == RETURN_STATEMENT){
+        if(strcmp(no->left->type, "int") == 0 && strcmp(func_type, "float") == 0){
+            conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+            no->left = conversion_node;
         }
         else{
-            conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+            conversion_node = insert_node(FLOAT_TO_INT, no->left, NULL, "int", NULL); 
             no->left = conversion_node;
         }
     }
     else{
-        conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
-        no->right = conversion_node;
+        if(strcmp(no->left->type, "int") == 0 && strcmp(no->right->type, "float") == 0){
+            if(no->node_class == ASSIGN_EXPRESSION){
+                conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
+                no->right = conversion_node;
+            }
+            else{
+                conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+                no->left = conversion_node;
+            }
+        }
+        else{
+            conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
+            no->right = conversion_node;
+        }
     }
 }
 
@@ -831,7 +859,7 @@ void define_type(node* no){
             (strcmp(type_left, "int") == 0 && strcmp(type_right, "float") == 0) || 
             (strcmp(type_left, "float") == 0 && strcmp(type_right, "int") == 0)
         ){
-            add_implicit_conversion(no);
+            add_implicit_conversion(no, NULL);
             type_left = no->left->type;
         }
         else{ // type mismatch -- no implicit conversion
@@ -866,7 +894,7 @@ void semantic_error_return_in_void(char* type){
     free(error);
 }
 
-void check_semantic_error_return_type(char* return_type){
+void check_semantic_error_return_type(char* return_type, node* no){
     symbol_node *s;
     scope* scope = get_stack_head();
     char* function_name = scope->scope_name;
@@ -877,7 +905,14 @@ void check_semantic_error_return_type(char* return_type){
             if(strcmp("void", s->type) == 0){
                 semantic_error_return_in_void(return_type);
             }
-            else{
+            else if( // type mismatch -- implicit conversion
+                (strcmp(return_type, "int") == 0 && strcmp(s->type, "float") == 0) || 
+                (strcmp(return_type, "float") == 0 && strcmp(s->type, "int") == 0)
+            ){
+                add_implicit_conversion(no, s->type);
+                no->type = no->left->type;
+            }
+            else{ // type mismatch -- no implicit conversion
                 semantic_error_return_type(return_type, s->type);
             }
         }
@@ -1006,6 +1041,58 @@ args_node* create_args_list(node* no){
     return args_list;
 }
 
+// Retorno o no da árvore do argumento da posição i
+node* find_arg(node* no, int i, int number_args, int* direction){
+    int j;
+    node* aux = no;
+    if((i == number_args - 1) && (i != 0)){
+
+        j = i - 1;
+    }
+    else{
+        j = i;
+    }
+    while(j > 0){
+        aux = aux->right;
+        j--;
+    }
+    if((i == number_args - 1) && (i != 0)){
+        *direction = 1;
+        return aux;
+    }
+    else{
+        *direction = 0;
+        return aux;
+    }
+}
+
+// Adiciona nó de conversão implícita na árvore para argumentos.
+// 
+void add_implicit_args_conversion(node *no, char* expected_type, int direction){
+    node* conversion_node;
+    if(direction == 0){
+        if(strcmp(no->left->type, "int") == 0 && strcmp(expected_type, "float") == 0){
+            conversion_node = insert_node(INT_TO_FLOAT, no->left, NULL, "float", NULL);
+            no->left = conversion_node;
+        }
+        else{
+            conversion_node = insert_node(FLOAT_TO_INT, no->left, NULL, "int", NULL); 
+            no->left = conversion_node;
+        }
+    }
+    else{
+        if(strcmp(no->right->type, "int") == 0 && strcmp(expected_type, "float") == 0){
+            conversion_node = insert_node(INT_TO_FLOAT, no->right, NULL, "float", NULL);
+            no->right = conversion_node;
+        }
+        else{
+            conversion_node = insert_node(FLOAT_TO_INT, no->right, NULL, "int", NULL); 
+            no->right = conversion_node;
+        }
+    }
+    
+}
+
 // Checa erro semantico de tipo incompatível para argumentos
 void check_semantic_error_type_mismatch_args(node* no, char* function_name){
     args_node* args_list = create_args_list(no);
@@ -1044,6 +1131,9 @@ void check_semantic_error_type_mismatch_args(node* no, char* function_name){
         symbol_node* s;
         arg_atual = args_list;
         param_atual = param_list;
+        int direction;
+        node* aux;
+        int i = 0;
         while(arg_atual != NULL){
             HASH_FIND_STR(symbol_table, param_atual->key, s);
             if(s != NULL){
@@ -1052,12 +1142,21 @@ void check_semantic_error_type_mismatch_args(node* no, char* function_name){
                     s->type != NULL &&
                     (strcmp(arg_atual->type, s->type) != 0)
                 ){
-                    // type mismatch
-                    semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, s->name, s->type);
+                    if( // type mismatch -- implicit conversion
+                        (strcmp(arg_atual->type, "int") == 0 && strcmp(s->type, "float") == 0) || 
+                        (strcmp(arg_atual->type, "float") == 0 && strcmp(s->type, "int") == 0)
+                    ){
+                        aux = find_arg(no, i, number_args, &direction);
+                        add_implicit_args_conversion(aux, s->type, direction);
+                    }
+                    else{// type mismatch
+                        semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, s->name, s->type);
+                    }
                 }
             }
             arg_atual = arg_atual->next;
             param_atual = param_atual->next;
+            i++;
         }
     }
 }
@@ -1138,17 +1237,29 @@ void check_semantic_error_type_mismatch_args_native_function(node* no, char* fun
     else{
         arg_atual = args_list;
         param_atual = param_list;
+        int direction;
+        node* aux;
+        int i = 0;
         while(arg_atual != NULL){
             if(
                 arg_atual->type != NULL &&
                 param_atual->type != NULL &&
                 (strcmp(arg_atual->type, param_atual->type) != 0)
             ){
-                // type mismatch
-                semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, param_atual->name, param_atual->type);
+                if( // type mismatch -- implicit conversion
+                    (strcmp(arg_atual->type, "int") == 0 && strcmp(param_atual->type, "float") == 0) || 
+                    (strcmp(arg_atual->type, "float") == 0 && strcmp(param_atual->type, "int") == 0)
+                ){
+                    aux = find_arg(no, i, number_args, &direction);
+                    add_implicit_args_conversion(aux, param_atual->type, direction);
+                }
+                else{// type mismatch
+                    semantic_error_type_mismatch_args(function_name, arg_atual->name, arg_atual->type, param_atual->name, param_atual->type);
+                }
             }
             arg_atual = arg_atual->next;
             param_atual = param_atual->next;
+            i++;
         }
     }
 }
@@ -1173,6 +1284,57 @@ void check_semantic_error_no_main(){
     }
 }
 
+
+// **********TAC
+
+// Printa tabela de símbolos
+void print_symbol_table_TAC(FILE *tac_file) {
+    symbol_node *s;
+    char *aux = (char *)malloc(
+        (1 + 100) * sizeof(char)
+    );
+    fputs(".table\n", tac_file);
+    for(s=symbol_table; s != NULL; s=s->hh.next) {
+        if(s->symbol_type != 'F'){
+            if((strcmp(s->type, "string") == 0)){
+                strcpy(aux, "char");
+            }
+            else if ((strcmp(s->type, "bool") == 0)){
+                strcpy(aux, "int");
+            }
+            else{
+                strcpy(aux, s->type);
+            }
+            strcat(aux, " ");
+            strcat(aux, s->name);
+            strcat(aux, "__");
+            strcat(aux, s->scope_name);
+            if((strcmp(s->type, "string") == 0)){
+                strcat(aux, " [] = \"\"");
+            }
+            strcat(aux, "\n");
+            fputs(aux, tac_file);
+        }
+    }
+    free(aux);
+}
+
+void print_code_TAC(node* tree, FILE *tac_file){
+    fputs(".code\n", tac_file);
+    fputs("nop", tac_file);
+    fputs("\n", tac_file);
+}
+
+void create_file_TAC(node* parser_tree){
+    FILE *tac_file;
+    tac_file = fopen("a.tac", "w+");
+    print_symbol_table_TAC(tac_file);
+    print_code_TAC(parser_tree, tac_file);
+    fclose(tac_file);
+    printf("\nArquivo a.tac criado\n");
+}
+
+
 int main(int argc, char **argv) {
     ++argv, --argc;
     if(argc > 0)
@@ -1181,10 +1343,11 @@ int main(int argc, char **argv) {
         yyin = stdin;
     initialize_global_scope();
     yyparse();
+    print_symbol_table();
     if(total_errors == 0){
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
-        print_symbol_table();
+        create_file_TAC(parser_tree);
     }
     yylex_destroy();
     free_tree(parser_tree);

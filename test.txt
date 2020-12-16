@@ -1,9 +1,9 @@
 /* 
 Função pra gerar string
 */
-string lowerCase(string aux){
+string lowerCase(string aux, float a, float d, float e, int i){
     string b;
-    int c;
+    float c;
     return strInsert(aux, b, c);
 }
 
@@ -13,12 +13,13 @@ int main(){
     bool always_true;
     bool result;
     int i;
+    int j;
     float a;
     bool b;
     always_true = true;
     scan(stringTeste);
     if(always_true){
-        result = stringTeste == lowerCase(stringTeste);
+        result = stringTeste == lowerCase(stringTeste, i, i, j, a);
     }
     if (result){
         print(stringTeste);

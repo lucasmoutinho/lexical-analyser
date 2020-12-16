@@ -1,8 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.0.4.  */
+/* A Bison parser, made by GNU Bison 3.7.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,6 +31,10 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
+
 #ifndef YY_YY_SYNTAX_TAB_H_INCLUDED
 # define YY_YY_SYNTAX_TAB_H_INCLUDED
 /* Debug traces.  */
@@ -40,49 +45,53 @@
 extern int yydebug;
 #endif
 
-/* Token type.  */
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    INT = 258,
-    FLOAT = 259,
-    BOOL = 260,
-    STR = 261,
-    TYPE = 262,
-    ID = 263,
-    IF = 264,
-    ELSE = 265,
-    WHILE = 266,
-    RETURN = 267,
-    PRINT = 268,
-    SCAN = 269,
-    STRUPPER = 270,
-    STRLOWER = 271,
-    STRCONCAT = 272,
-    STRCOPY = 273,
-    STRINSERT = 274,
-    QUOTES = 275,
-    ASSIGN = 276,
-    OP = 277,
-    RELOP = 278,
-    LOG = 279
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    INT = 258,                     /* INT  */
+    FLOAT = 259,                   /* FLOAT  */
+    BOOL = 260,                    /* BOOL  */
+    STR = 261,                     /* STR  */
+    TYPE = 262,                    /* TYPE  */
+    ID = 263,                      /* ID  */
+    IF = 264,                      /* IF  */
+    ELSE = 265,                    /* ELSE  */
+    WHILE = 266,                   /* WHILE  */
+    RETURN = 267,                  /* RETURN  */
+    PRINT = 268,                   /* PRINT  */
+    SCAN = 269,                    /* SCAN  */
+    STRUPPER = 270,                /* STRUPPER  */
+    STRLOWER = 271,                /* STRLOWER  */
+    STRCONCAT = 272,               /* STRCONCAT  */
+    STRCOPY = 273,                 /* STRCOPY  */
+    STRINSERT = 274,               /* STRINSERT  */
+    QUOTES = 275,                  /* QUOTES  */
+    ASSIGN = 276,                  /* ASSIGN  */
+    OP = 277,                      /* OP  */
+    RELOP = 278,                   /* RELOP  */
+    LOG = 279                      /* LOG  */
   };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
 union YYSTYPE
 {
-#line 133 "syntax.y" /* yacc.c:1909  */
+#line 140 "syntax.y"
 
     char* str;
     struct node* no;
 
-#line 84 "syntax.tab.h" /* yacc.c:1909  */
-};
+#line 93 "syntax.tab.h"
 
+};
 typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
