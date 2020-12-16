@@ -131,6 +131,9 @@ void semantic_error_no_main();
 void check_semantic_error_no_main();
 node* find_arg(node* no, int i, int number_args, int* direction);
 void add_implicit_args_conversion(node *no, char* expected_type, int direction);
+void create_file_TAC(node* parser_tree);
+void print_symbol_table_TAC(FILE *tac_file);
+void print_code_TAC(node* tree, FILE *tac_file);
 
 %}
 
@@ -1281,6 +1284,40 @@ void check_semantic_error_no_main(){
     }
 }
 
+
+// **********TAC
+
+// Printa tabela de símbolos
+void print_symbol_table_TAC(FILE *tac_file) {
+    symbol_node *s;
+    symbol_node *ps;
+    param_node *p;
+    int number_of_space;
+    char* aux = "";
+    fputs(".table\n", tac_file);
+    for(s=symbol_table; s != NULL; s=s->hh.next) {
+        if(s->symbol_type != 'F'){
+            strcat(aux, s->scope_name);
+            strcat(aux, "\n");
+            fputs(aux, tac_file);
+        }
+    }
+}
+
+void print_code_TAC(node* tree, FILE *tac_file){
+    printf("...");
+}
+
+void create_file_TAC(node* parser_tree){
+    FILE *tac_file;
+    tac_file = fopen("a.tac", "w+");
+    print_symbol_table_TAC(tac_file);
+    print_code_TAC(parser_tree, tac_file);
+    fclose(tac_file);
+    printf("\nArquivo a.tac criado\n");
+}
+
+
 int main(int argc, char **argv) {
     ++argv, --argc;
     if(argc > 0)
@@ -1293,6 +1330,7 @@ int main(int argc, char **argv) {
     if(total_errors == 0){
         printf("\n\n----------  ABSTRACT SYNTAX TREE ----------\n\n");
         print_tree(parser_tree, 0);
+        create_file_TAC(parser_tree);
     }
     yylex_destroy();
     free_tree(parser_tree);
