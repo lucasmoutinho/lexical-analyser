@@ -3270,7 +3270,7 @@ void print_symbol_table_TAC(FILE *tac_file) {
             strcat(aux, "__");
             strcat(aux, s->scope_name);
             if((strcmp(s->type, "string") == 0)){
-                strcat(aux, " [] \"\"");
+                strcat(aux, " [] = \"\"");
             }
             strcat(aux, "\n");
             fputs(aux, tac_file);
