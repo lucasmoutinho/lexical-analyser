@@ -3267,7 +3267,7 @@ void print_symbol_table_TAC(FILE *tac_file) {
             }
             strcat(aux, " ");
             strcat(aux, s->name);
-            strcat(aux, "@");
+            strcat(aux, "__");
             strcat(aux, s->scope_name);
             if((strcmp(s->type, "string") == 0)){
                 strcat(aux, " [] ");
