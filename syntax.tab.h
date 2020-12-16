@@ -84,7 +84,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 137 "syntax.y"
+#line 140 "syntax.y"
 
     char* str;
     struct node* no;

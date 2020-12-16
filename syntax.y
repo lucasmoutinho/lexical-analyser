@@ -1290,18 +1290,22 @@ void check_semantic_error_no_main(){
 // Printa tabela de símbolos
 void print_symbol_table_TAC(FILE *tac_file) {
     symbol_node *s;
-    symbol_node *ps;
-    param_node *p;
-    int number_of_space;
-    char* aux = "";
+    char *aux = (char *)malloc(
+        (1 + 100) * sizeof(char)
+    );
     fputs(".table\n", tac_file);
     for(s=symbol_table; s != NULL; s=s->hh.next) {
         if(s->symbol_type != 'F'){
+            strcpy(aux, s->type);
+            strcat(aux, " ");
+            strcat(aux, s->name);
+            strcat(aux, "@");
             strcat(aux, s->scope_name);
             strcat(aux, "\n");
             fputs(aux, tac_file);
         }
     }
+    free(aux);
 }
 
 void print_code_TAC(node* tree, FILE *tac_file){
