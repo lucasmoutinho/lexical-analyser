@@ -1296,10 +1296,15 @@ void print_symbol_table_TAC(FILE *tac_file) {
     fputs(".table\n", tac_file);
     for(s=symbol_table; s != NULL; s=s->hh.next) {
         if(s->symbol_type != 'F'){
-            strcpy(aux, s->type);
+            if((strcmp(s->type, "string") == 0)){
+                strcpy(aux, "char");
+            }
+            else{
+                strcpy(aux, s->type);
+            }
             strcat(aux, " ");
             strcat(aux, s->name);
-            strcat(aux, "__");
+            strcat(aux, "@");
             strcat(aux, s->scope_name);
             if((strcmp(s->type, "string") == 0)){
                 strcat(aux, " [] ");
