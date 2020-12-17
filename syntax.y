@@ -1364,7 +1364,8 @@ char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg
 char* int_to_float_TAC(node* no, char* register_symbol){
     char *str = (char *)malloc((1 + 500) * sizeof(char));
     if(no->left->node_class == ARITHIMETIC_EXPRESSION){
-        strcpy(str, ari_instruction_TAC(no->left, "$3"));
+        strcpy(str, ari_instruction_TAC(no->left, "$7"));
+        strcat(str, "mov $3, $7\n");
     }
     else{
         strcpy(str, "mov $3, ");
@@ -1380,7 +1381,8 @@ char* int_to_float_TAC(node* no, char* register_symbol){
 char* float_to_int_TAC(node* no, char* register_symbol){
     char *str = (char *)malloc((1 + 500) * sizeof(char));
     if(no->left->node_class == ARITHIMETIC_EXPRESSION){
-        strcpy(str, ari_instruction_TAC(no->left, "$3"));
+        strcpy(str, ari_instruction_TAC(no->left, "$8"));
+        strcat(str, "mov $3, $8\n");
     }
     else{
         strcpy(str, "mov $3, ");
