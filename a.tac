@@ -18,7 +18,7 @@ mov $1, 5
 mov $2, a__main
 seq $10, $1, $2
 brz main_0, $10
-print "deu certo"
+print -1
 jump main_1
 main_0:
 println a__main
