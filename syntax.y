@@ -136,8 +136,10 @@ void print_symbol_table_TAC(FILE *tac_file);
 void print_code_TAC(node* tree, FILE *tac_file);
 void parse_TAC(node *no, FILE *tac_file);
 char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg3);
-char* ari_instruction_TAC(node *no);
-char* log_instruction_TAC(node *no);
+char* ari_instruction_TAC(node *no, char* register_symbol);
+char* log_instruction_TAC(node *no, char* register_symbol);
+char* rel_instruction_TAC(node *no, char* register_symbol);
+char* intermediate_expression(node* no, char* register_symbol);
 
 %}
 
@@ -1356,10 +1358,10 @@ char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg
     return str;
 }
 
-char* ari_instruction_TAC(node *no){
+char* ari_instruction_TAC(node *no, char* register_symbol){
     char *str = (char *)malloc((1 + 500) * sizeof(char));
     if(no->left->node_class == ARITHIMETIC_EXPRESSION){
-        strcpy(str, ari_instruction_TAC(no->left));
+        strcpy(str, ari_instruction_TAC(no->left, register_symbol));
         if(strcmp(no->value, "+") == 0){
             strcat(str, "add ");
         } 
@@ -1372,8 +1374,32 @@ char* ari_instruction_TAC(node *no){
         else if(strcmp(no->value, "/") == 0){
             strcat(str, "div ");
         }
-        strcat(str, "$0, $0, ");
+        strcat(str, register_symbol);
+        strcat(str, ", ");
+        strcat(str, register_symbol);
+        strcat(str, ", ");
         strcat(str, no->right->value);
+        strcat(str, "\n");
+    }
+    else if(no->right->node_class == ARITHIMETIC_EXPRESSION){
+        strcpy(str, ari_instruction_TAC(no->right, register_symbol));
+        if(strcmp(no->value, "+") == 0){
+            strcat(str, "add ");
+        } 
+        else if(strcmp(no->value, "-") == 0){
+            strcat(str, "sub ");
+        } 
+        else if(strcmp(no->value, "*") == 0){
+            strcat(str, "mul ");
+        } 
+        else if(strcmp(no->value, "/") == 0){
+            strcat(str, "div ");
+        }
+        strcat(str, register_symbol);
+        strcat(str, ", ");
+        strcat(str, no->left->value);
+        strcat(str, ", ");
+        strcat(str, register_symbol);
         strcat(str, "\n");
     }
     else{
@@ -1389,7 +1415,8 @@ char* ari_instruction_TAC(node *no){
         else if(strcmp(no->value, "/") == 0){
             strcpy(str, "div ");
         }
-        strcat(str, "$0, ");
+        strcat(str, register_symbol);
+        strcat(str, ", ");
         strcat(str, no->left->value);
         strcat(str, ", ");
         strcat(str, no->right->value);
@@ -1398,21 +1425,62 @@ char* ari_instruction_TAC(node *no){
     return str;
 }
 
-char* log_instruction_TAC(node *no){
+char* log_instruction_TAC(node *no, char* register_symbol){
     char *str = (char *)malloc((1 + 500) * sizeof(char));
-    if(no->left->node_class == LOGICAL_EXPRESSION){
-        strcpy(str, log_instruction_TAC(no->left));
+    if(
+        no->left->node_class == LOGICAL_EXPRESSION ||
+        no->left->node_class == RELATIONAL_EXPRESSION 
+    ){
+        strcpy(str, intermediate_expression(no->left, register_symbol));
+        if(
+            no->right->node_class == LOGICAL_EXPRESSION ||
+            no->right->node_class == RELATIONAL_EXPRESSION
+        ){
+            strcat(str, intermediate_expression(no->right, "$4"));
+        }
         if(strcmp(no->value, "&&") == 0){
             strcat(str, "and ");
         } 
         else if(strcmp(no->value, "||") == 0){
             strcat(str, "or ");
         } 
-        else if(strcmp(no->value, "*") == 0){
+        else if(strcmp(no->value, "!") == 0){
             strcat(str, "not ");
         }
-        strcat(str, "$0, $0, ");
-        strcat(str, no->right->value);
+        strcat(str, register_symbol);
+        strcat(str, ", ");
+        strcat(str, register_symbol);
+        strcat(str, ", ");
+        if(
+            no->right->node_class == LOGICAL_EXPRESSION ||
+            no->right->node_class == RELATIONAL_EXPRESSION
+        ){
+            strcat(str, "$4");
+        }
+        else{
+            strcat(str, no->right->value);
+        }
+        strcat(str, "\n");
+    }
+    else if(
+        no->right->node_class == LOGICAL_EXPRESSION ||
+        no->right->node_class == RELATIONAL_EXPRESSION
+    ){
+        strcpy(str, intermediate_expression(no->right, register_symbol));
+        if(strcmp(no->value, "&&") == 0){
+            strcat(str, "and ");
+        } 
+        else if(strcmp(no->value, "||") == 0){
+            strcat(str, "or ");
+        } 
+        else if(strcmp(no->value, "!") == 0){
+            strcat(str, "not ");
+        }
+        strcat(str, register_symbol);
+        strcat(str, ", ");
+        strcat(str, no->left->value);
+        strcat(str, ", ");
+        strcat(str, register_symbol);
         strcat(str, "\n");
     }
     else{
@@ -1422,14 +1490,83 @@ char* log_instruction_TAC(node *no){
         else if(strcmp(no->value, "||") == 0){
             strcpy(str, "or ");
         } 
-        else if(strcmp(no->value, "*") == 0){
+        else if(strcmp(no->value, "!") == 0){
             strcpy(str, "not ");
         }
-        strcat(str, "$0, ");
+        strcat(str, register_symbol);
+        strcat(str, ", ");
         strcat(str, no->left->value);
         strcat(str, ", ");
         strcat(str, no->right->value);
         strcat(str, "\n");
+    }
+    return str;
+}
+
+
+char* rel_instruction_TAC(node *no, char* register_symbol){
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
+    if(strcmp(no->value, "<") == 0){
+        strcpy(str, intermediate_expression(no->left, "$1"));
+        strcat(str, intermediate_expression(no->right, "$2"));
+        strcat(str, "slt ");
+        strcat(str, register_symbol);
+        strcat(str, ", $1, $2\n");
+    } 
+    else if(strcmp(no->value, "<=") == 0){
+        strcpy(str, intermediate_expression(no->left, "$1"));
+        strcat(str, intermediate_expression(no->right, "$2"));
+        strcat(str, "sleq ");
+        strcat(str, register_symbol);
+        strcat(str, ", $1, $2\n");
+    }
+    else if(strcmp(no->value, ">") == 0){
+        strcpy(str, intermediate_expression(no->left, "$1"));
+        strcat(str, intermediate_expression(no->right, "$2"));
+        strcat(str, "slt ");
+        strcat(str, register_symbol);
+        strcat(str, ", $2, $1\n");
+    }
+    else if(strcmp(no->value, ">=") == 0){
+        strcpy(str, intermediate_expression(no->left, "$1"));
+        strcat(str, intermediate_expression(no->right, "$2"));
+        strcat(str, "sleq ");
+        strcat(str, register_symbol);
+        strcat(str, ", $2, $1\n");
+    }
+    else if(strcmp(no->value, "==") == 0){
+        strcpy(str, intermediate_expression(no->left, "$1"));
+        strcat(str, intermediate_expression(no->right, "$2"));
+        strcat(str, "seq ");
+        strcat(str, register_symbol);
+        strcat(str, ", $1, $2\n");
+    }
+    else if(strcmp(no->value, "!=") == 0){
+        strcpy(str, intermediate_expression(no->left, "$1"));
+        strcat(str, intermediate_expression(no->right, "$2"));
+        strcat(str, "seq ");
+        strcat(str, register_symbol);
+        strcat(str, ", $1, $2\n");
+        strcat(str, "not ");
+        strcat(str, register_symbol);
+        strcat(str, "\n");
+    }
+    return str;
+}
+
+char* intermediate_expression(node* no, char* register_symbol){
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
+    if(no->node_class == ARITHIMETIC_EXPRESSION){
+        str = ari_instruction_TAC(no, register_symbol);
+    }
+    else if(no->node_class == LOGICAL_EXPRESSION){
+        str = log_instruction_TAC(no, register_symbol);
+    }
+    else if(no->node_class == RELATIONAL_EXPRESSION){
+        str = rel_instruction_TAC(no, register_symbol);
+    }
+    else{
+        str = basic_instruction_TAC("mov", register_symbol, no->value, NULL);
     }
     return str;
 }
@@ -1448,11 +1585,15 @@ void parse_TAC(node *no, FILE *tac_file){
                 break;
             case ASSIGN_EXPRESSION:
                 if(no->right->node_class == LOGICAL_EXPRESSION){
-                    str = log_instruction_TAC(no->right);
+                    str = log_instruction_TAC(no->right, "$0");
                     strcat(str, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
                 }
                 else if(no->right->node_class == ARITHIMETIC_EXPRESSION){
-                    str = ari_instruction_TAC(no->right);
+                    str = ari_instruction_TAC(no->right, "$0");
+                    strcat(str, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
+                }
+                else if(no->right->node_class == RELATIONAL_EXPRESSION){
+                    str = rel_instruction_TAC(no->right, "$0");
                     strcat(str, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
                 }
                 else{
