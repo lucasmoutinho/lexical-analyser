@@ -137,6 +137,7 @@ void print_code_TAC(node* tree, FILE *tac_file);
 void parse_TAC(node *no, FILE *tac_file);
 char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg3);
 char* ari_instruction_TAC(node *no);
+char* log_instruction_TAC(node *no);
 
 %}
 
@@ -1397,6 +1398,42 @@ char* ari_instruction_TAC(node *no){
     return str;
 }
 
+char* log_instruction_TAC(node *no){
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
+    if(no->left->node_class == LOGICAL_EXPRESSION){
+        strcpy(str, log_instruction_TAC(no->left));
+        if(strcmp(no->value, "&&") == 0){
+            strcat(str, "and ");
+        } 
+        else if(strcmp(no->value, "||") == 0){
+            strcat(str, "or ");
+        } 
+        else if(strcmp(no->value, "*") == 0){
+            strcat(str, "not ");
+        }
+        strcat(str, "$0, $0, ");
+        strcat(str, no->right->value);
+        strcat(str, "\n");
+    }
+    else{
+        if(strcmp(no->value, "&&") == 0){
+            strcpy(str, "and ");
+        } 
+        else if(strcmp(no->value, "||") == 0){
+            strcpy(str, "or ");
+        } 
+        else if(strcmp(no->value, "*") == 0){
+            strcpy(str, "not ");
+        }
+        strcat(str, "$0, ");
+        strcat(str, no->left->value);
+        strcat(str, ", ");
+        strcat(str, no->right->value);
+        strcat(str, "\n");
+    }
+    return str;
+}
+
 void parse_TAC(node *no, FILE *tac_file){
     char* str = NULL;
     if(no != NULL){
@@ -1410,8 +1447,9 @@ void parse_TAC(node *no, FILE *tac_file){
                 }
                 break;
             case ASSIGN_EXPRESSION:
-                if(no->right->node_class == RELATIONAL_EXPRESSION){
-                    printf("...");
+                if(no->right->node_class == LOGICAL_EXPRESSION){
+                    str = log_instruction_TAC(no->right);
+                    strcat(str, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
                 }
                 else if(no->right->node_class == ARITHIMETIC_EXPRESSION){
                     str = ari_instruction_TAC(no->right);
