@@ -3262,114 +3262,114 @@ void check_semantic_error_no_main(){
 // Printa tabela de símbolos
 void print_symbol_table_TAC(FILE *tac_file) {
     symbol_node *s;
-    char *aux = (char *)malloc((1 + 100) * sizeof(char));
+    char *str = (char *)malloc((1 + 100) * sizeof(char));
     fputs(".table\n", tac_file);
     for(s=symbol_table; s != NULL; s=s->hh.next) {
         if(s->symbol_type != 'F'){
             if((strcmp(s->type, "string") == 0)){
-                strcpy(aux, "char");
+                strcpy(str, "char");
             }
             else if ((strcmp(s->type, "bool") == 0)){
-                strcpy(aux, "int");
+                strcpy(str, "int");
             }
             else{
-                strcpy(aux, s->type);
+                strcpy(str, s->type);
             }
-            strcat(aux, " ");
-            strcat(aux, s->name);
-            strcat(aux, "__");
-            strcat(aux, s->scope_name);
+            strcat(str, " ");
+            strcat(str, s->name);
+            strcat(str, "__");
+            strcat(str, s->scope_name);
             if((strcmp(s->type, "string") == 0)){
-                strcat(aux, " [] = \"\"");
+                strcat(str, " [] = \"\"");
             }
-            strcat(aux, "\n");
-            fputs(aux, tac_file);
+            strcat(str, "\n");
+            fputs(str, tac_file);
         }
     }
     fputs("int true = 1\n", tac_file);
     fputs("int false = 0\n", tac_file);
-    free(aux);
+    free(str);
 }
 
 char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg3){
-    char *aux = (char *)malloc((1 + 500) * sizeof(char));
-    strcpy(aux, instruction);
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
+    strcpy(str, instruction);
     if(arg1 != NULL){
         if((strcmp(instruction, "print") == 0)){
-            strcat(aux, " ");
-            strcat(aux, "\"");
-            strcat(aux, arg1);
-            strcat(aux, "\"");
+            strcat(str, " ");
+            strcat(str, "\"");
+            strcat(str, arg1);
+            strcat(str, "\"");
         }
         else{
-            strcat(aux, " ");
-            strcat(aux, arg1);
+            strcat(str, " ");
+            strcat(str, arg1);
         }
         if(arg2 != NULL){
-            strcat(aux, ", ");
-            strcat(aux, arg2);
+            strcat(str, ", ");
+            strcat(str, arg2);
             if(arg3 != NULL){
-                strcat(aux, ", ");
-                strcat(aux, arg3);
+                strcat(str, ", ");
+                strcat(str, arg3);
             }
         }
     }
-    strcat(aux, "\n");
-    return aux;
+    strcat(str, "\n");
+    return str;
 }
 
 char* ari_instruction_TAC(node *no){
-    char *aux = (char *)malloc((1 + 500) * sizeof(char));
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
     if(no->left->node_class == ARITHIMETIC_EXPRESSION){
-        strcpy(aux, ari_instruction_TAC(no->left));
+        strcpy(str, ari_instruction_TAC(no->left));
         if(strcmp(no->value, "+") == 0){
-            strcat(aux, "add ");
+            strcat(str, "add ");
         } 
         else if(strcmp(no->value, "-") == 0){
-            strcat(aux, "sub ");
+            strcat(str, "sub ");
         } 
         else if(strcmp(no->value, "*") == 0){
-            strcat(aux, "mul ");
+            strcat(str, "mul ");
         } 
         else if(strcmp(no->value, "/") == 0){
-            strcat(aux, "div ");
+            strcat(str, "div ");
         }
-        strcat(aux, "$0, $0, ");
-        strcat(aux, no->right->value);
-        strcat(aux, "\n");
+        strcat(str, "$0, $0, ");
+        strcat(str, no->right->value);
+        strcat(str, "\n");
     }
     else{
         if(strcmp(no->value, "+") == 0){
-            strcpy(aux, "add ");
+            strcpy(str, "add ");
         } 
         else if(strcmp(no->value, "-") == 0){
-            strcpy(aux, "sub ");
+            strcpy(str, "sub ");
         } 
         else if(strcmp(no->value, "*") == 0){
-            strcpy(aux, "mul ");
+            strcpy(str, "mul ");
         } 
         else if(strcmp(no->value, "/") == 0){
-            strcpy(aux, "div ");
+            strcpy(str, "div ");
         }
-        strcat(aux, "$0, ");
-        strcat(aux, no->left->value);
-        strcat(aux, ", ");
-        strcat(aux, no->right->value);
-        strcat(aux, "\n");
+        strcat(str, "$0, ");
+        strcat(str, no->left->value);
+        strcat(str, ", ");
+        strcat(str, no->right->value);
+        strcat(str, "\n");
     }
-    return aux;
+    return str;
 }
 
 void parse_TAC(node *no, FILE *tac_file){
-    char* aux = NULL;
+    char* str = NULL;
     if(no != NULL){
         switch(no->node_class){
             case PRINT_STATEMENT:
                 if(no->left->node_class == STRING){
-                    aux = basic_instruction_TAC("print", no->left->value, NULL, NULL);
+                    str = basic_instruction_TAC("print", no->left->value, NULL, NULL);
                 }
                 else{
-                    aux = basic_instruction_TAC("println", no->left->value, NULL, NULL);
+                    str = basic_instruction_TAC("println", no->left->value, NULL, NULL);
                 }
                 break;
             case ASSIGN_EXPRESSION:
@@ -3377,19 +3377,19 @@ void parse_TAC(node *no, FILE *tac_file){
                     printf("...");
                 }
                 else if(no->right->node_class == ARITHIMETIC_EXPRESSION){
-                    aux = ari_instruction_TAC(no->right);
-                    strcat(aux, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
+                    str = ari_instruction_TAC(no->right);
+                    strcat(str, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
                 }
                 else{
-                    aux = basic_instruction_TAC("mov", no->left->value, no->right->value, NULL);
+                    str = basic_instruction_TAC("mov", no->left->value, no->right->value, NULL);
                 }
                 break;
             default:
                 break;
         }
-        if(aux != NULL){
-            fputs(aux, tac_file);
-            free(aux);
+        if(str != NULL){
+            fputs(str, tac_file);
+            free(str);
         }
         parse_TAC(no->left, tac_file);
         parse_TAC(no->right, tac_file);
