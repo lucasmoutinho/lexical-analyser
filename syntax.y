@@ -136,6 +136,7 @@ void print_symbol_table_TAC(FILE *tac_file);
 void print_code_TAC(node* tree, FILE *tac_file);
 void parse_TAC(node *no, FILE *tac_file);
 char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg3);
+char* ari_instruction_TAC(node *no);
 
 %}
 
@@ -1354,6 +1355,48 @@ char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg
     return aux;
 }
 
+char* ari_instruction_TAC(node *no){
+    char *aux = (char *)malloc((1 + 500) * sizeof(char));
+    if(no->left->node_class == ARITHIMETIC_EXPRESSION){
+        strcpy(aux, ari_instruction_TAC(no->left));
+        if(strcmp(no->value, "+") == 0){
+            strcat(aux, "add ");
+        } 
+        else if(strcmp(no->value, "-") == 0){
+            strcat(aux, "sub ");
+        } 
+        else if(strcmp(no->value, "*") == 0){
+            strcat(aux, "mul ");
+        } 
+        else if(strcmp(no->value, "/") == 0){
+            strcat(aux, "div ");
+        }
+        strcat(aux, "$0, $0, ");
+        strcat(aux, no->right->value);
+        strcat(aux, "\n");
+    }
+    else{
+        if(strcmp(no->value, "+") == 0){
+            strcpy(aux, "add ");
+        } 
+        else if(strcmp(no->value, "-") == 0){
+            strcpy(aux, "sub ");
+        } 
+        else if(strcmp(no->value, "*") == 0){
+            strcpy(aux, "mul ");
+        } 
+        else if(strcmp(no->value, "/") == 0){
+            strcpy(aux, "div ");
+        }
+        strcat(aux, "$0, ");
+        strcat(aux, no->left->value);
+        strcat(aux, ", ");
+        strcat(aux, no->right->value);
+        strcat(aux, "\n");
+    }
+    return aux;
+}
+
 void parse_TAC(node *no, FILE *tac_file){
     char* aux = NULL;
     if(no != NULL){
@@ -1369,6 +1412,10 @@ void parse_TAC(node *no, FILE *tac_file){
             case ASSIGN_EXPRESSION:
                 if(no->right->node_class == RELATIONAL_EXPRESSION){
                     printf("...");
+                }
+                else if(no->right->node_class == ARITHIMETIC_EXPRESSION){
+                    aux = ari_instruction_TAC(no->right);
+                    strcat(aux, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
                 }
                 else{
                     aux = basic_instruction_TAC("mov", no->left->value, no->right->value, NULL);
