@@ -1650,6 +1650,10 @@ void parse_TAC(node *no, FILE *tac_file){
                     str = rel_instruction_TAC(no->right, "$0");
                     strcat(str, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
                 }
+                else if(no->right->node_class == FLOAT_TO_INT || no->right->node_class == INT_TO_FLOAT){
+                    str = convert_instruction_TAC(no->right, "$0");
+                    strcat(str, basic_instruction_TAC("mov", no->left->value, "$0", NULL));
+                }
                 else{
                     str = basic_instruction_TAC("mov", no->left->value, no->right->value, NULL);
                 }

@@ -1,7 +1,7 @@
 /* Main */
 int main(){
     string stringTeste;
-    float a;
+    int a;
     a = (2 + (3.0/1));
     print(a);
     return 0;
