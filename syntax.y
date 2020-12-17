@@ -94,6 +94,9 @@ typedef struct symbol_node {
 
 symbol_node *symbol_table = NULL;    // Inicialização da tabela de símbolos
 
+int number_label = 0; // numero da label
+char *function_label = NULL; // function label
+
 // Declarações de funções
 node* insert_node(int node_class, node* left, node* right, char* type, char* value);
 void print_class(int node_class);
@@ -143,6 +146,7 @@ char* intermediate_expression(node* no, char* register_symbol);
 char* int_to_float_TAC(node* no, char* register_symbol);
 char* float_to_int_TAC(node* no, char* register_symbol);
 char* convert_instruction_TAC(node* no, char* register_symbol);
+char* conditional_instruction_TAC(node* no, char* register_symbol);
 
 %}
 
@@ -1627,8 +1631,41 @@ char* intermediate_expression(node* no, char* register_symbol){
     return str;
 }
 
+char* define_label(){
+    char *str = (char *)malloc((1 + 50) * sizeof(char));
+    sprintf(str, "%s_%d", function_label, number_label);
+    return str;
+}
+
+char* conditional_instruction_TAC(node* no, char* register_symbol){
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
+    if(strcmp(no->value, "if") == 0){
+        if(no->left->node_class == RELATIONAL_EXPRESSION){
+            strcpy(str, rel_instruction_TAC(no->left, register_symbol));
+        }
+        else if(no->left->node_class == LOGICAL_EXPRESSION){
+            strcpy(str, log_instruction_TAC(no->left, register_symbol));
+        }
+        else{
+            strcpy(str, "mov ");
+            strcat(str, register_symbol);
+            strcat(str, ", ");
+            strcat(str, no->left->value);
+            strcat(str, "\n");
+        }
+        strcat(str, "brz ");
+        strcat(str, define_label());
+        strcat(str, ", ");
+        strcat(str, register_symbol);
+        strcat(str, "\n");
+    }
+    return str;
+}
+
 void parse_TAC(node *no, FILE *tac_file){
     char* str = NULL;
+    char* label = NULL;
+    char* label2 = NULL;
     if(no != NULL){
         switch(no->node_class){
             case PRINT_STATEMENT:
@@ -1660,15 +1697,44 @@ void parse_TAC(node *no, FILE *tac_file){
                     str = basic_instruction_TAC("mov", no->left->value, no->right->value, NULL);
                 }
                 break;
+            case CONDITIONAL_STATEMENT:
+                str = conditional_instruction_TAC(no, "$10");
+                label = define_label();
+                number_label++;
+                fputs(str, tac_file);
+                if(no->right->right == NULL){ // SO IF
+                    parse_TAC(no->right->left, tac_file);
+                    strcpy(str, label);
+                    strcat(str, ":\n");
+                    strcat(str, basic_instruction_TAC("nop", NULL, NULL, NULL));
+                    fputs(str, tac_file);
+                }
+                else{ // IF COM ELSE
+                    label2 = define_label();
+                    number_label++;
+                    parse_TAC(no->right->left, tac_file);
+                    strcpy(str, basic_instruction_TAC("jump", label2, NULL, NULL));
+                    strcat(str, label);
+                    strcat(str, ":\n");
+                    fputs(str, tac_file);
+                    parse_TAC(no->right->right, tac_file);
+                    strcpy(str, label2);
+                    strcat(str, ":\n");
+                    strcat(str, basic_instruction_TAC("nop", NULL, NULL, NULL));
+                    fputs(str, tac_file);
+                }
+                break;
             default:
                 break;
         }
-        if(str != NULL){
-            fputs(str, tac_file);
-            free(str);
-        }
-        parse_TAC(no->left, tac_file);
-        parse_TAC(no->right, tac_file);
+        if(no->node_class != CONDITIONAL_STATEMENT){
+            if(str != NULL){
+                fputs(str, tac_file);
+                free(str);
+            }
+            parse_TAC(no->left, tac_file);
+            parse_TAC(no->right, tac_file);
+        } 
     }
 }
 
@@ -1682,6 +1748,8 @@ void print_code_TAC(node* tree, FILE *tac_file){
 void create_file_TAC(node* parser_tree){
     FILE *tac_file;
     tac_file = fopen("a.tac", "w+");
+    function_label = (char *)malloc((1 + 50) * sizeof(char));
+    strcpy(function_label, "main");
     print_symbol_table_TAC(tac_file);
     print_code_TAC(parser_tree, tac_file);
     fclose(tac_file);
