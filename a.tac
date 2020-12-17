@@ -1,7 +1,9 @@
 .table
 char stringTeste__main [] = ""
 int a__main
+int true = 1
+int false = 0
 .code
-println stringTeste__main
+mov a__main, 1
 println a__main
 nop

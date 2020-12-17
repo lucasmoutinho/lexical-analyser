@@ -1293,7 +1293,7 @@ void check_semantic_error_no_main(){
 }
 
 
-// **********TAC
+// **********TAC**********
 
 // Printa tabela de símbolos
 void print_symbol_table_TAC(FILE *tac_file) {
@@ -1322,6 +1322,8 @@ void print_symbol_table_TAC(FILE *tac_file) {
             fputs(aux, tac_file);
         }
     }
+    fputs("int true = 1\n", tac_file);
+    fputs("int false = 0\n", tac_file);
     free(aux);
 }
 
@@ -1329,10 +1331,7 @@ char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg
     char *aux = (char *)malloc((1 + 500) * sizeof(char));
     strcpy(aux, instruction);
     if(arg1 != NULL){
-        if(
-            (strcmp(instruction, "print") == 0)
-            
-        ){
+        if((strcmp(instruction, "print") == 0)){
             strcat(aux, " ");
             strcat(aux, "\"");
             strcat(aux, arg1);
@@ -1365,6 +1364,14 @@ void parse_TAC(node *no, FILE *tac_file){
                 }
                 else{
                     aux = basic_instruction_TAC("println", no->left->value, NULL, NULL);
+                }
+                break;
+            case ASSIGN_EXPRESSION:
+                if(no->right->node_class == RELATIONAL_EXPRESSION){
+                    printf("...");
+                }
+                else{
+                    aux = basic_instruction_TAC("mov", no->left->value, no->right->value, NULL);
                 }
                 break;
             default:
