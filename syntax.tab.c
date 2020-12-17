@@ -3332,7 +3332,7 @@ char* int_to_float_TAC(node* no, char* register_symbol){
     else{
         strcpy(str, "mov $3, ");
         strcat(str, no->left->value);
-        strcpy(str, "\n");
+        strcat(str, "\n");
     }
     strcat(str, "inttofl ");
     strcat(str, register_symbol);
@@ -3348,7 +3348,7 @@ char* float_to_int_TAC(node* no, char* register_symbol){
     else{
         strcpy(str, "mov $3, ");
         strcat(str, no->left->value);
-        strcpy(str, "\n");
+        strcat(str, "\n");
     }
     strcat(str, "fltoint ");
     strcat(str, register_symbol);
