@@ -140,6 +140,9 @@ char* ari_instruction_TAC(node *no, char* register_symbol);
 char* log_instruction_TAC(node *no, char* register_symbol);
 char* rel_instruction_TAC(node *no, char* register_symbol);
 char* intermediate_expression(node* no, char* register_symbol);
+char* int_to_float_TAC(node* no, char* register_symbol);
+char* float_to_int_TAC(node* no, char* register_symbol);
+char* convert_instruction_TAC(node* no, char* register_symbol);
 
 %}
 
@@ -1358,10 +1361,66 @@ char* basic_instruction_TAC(char *instruction, char* arg1, char* arg2, char* arg
     return str;
 }
 
+char* int_to_float_TAC(node* no, char* register_symbol){
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
+    if(no->left->node_class == ARITHIMETIC_EXPRESSION){
+        strcpy(str, ari_instruction_TAC(no->left, "$3"));
+    }
+    else{
+        strcpy(str, "mov $3, ");
+        strcat(str, no->left->value);
+        strcpy(str, "\n");
+    }
+    strcat(str, "inttofl ");
+    strcat(str, register_symbol);
+    strcat(str, ", $3\n");
+    return str;
+}
+
+char* float_to_int_TAC(node* no, char* register_symbol){
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
+    if(no->left->node_class == ARITHIMETIC_EXPRESSION){
+        strcpy(str, ari_instruction_TAC(no->left, "$3"));
+    }
+    else{
+        strcpy(str, "mov $3, ");
+        strcat(str, no->left->value);
+        strcpy(str, "\n");
+    }
+    strcat(str, "fltoint ");
+    strcat(str, register_symbol);
+    strcat(str, ", $3\n");
+    return str;
+}
+
+char* convert_instruction_TAC(node* no, char* register_symbol){
+    char *str = (char *)malloc((1 + 500) * sizeof(char));
+    if(no->node_class == INT_TO_FLOAT){
+        strcpy(str, int_to_float_TAC(no, register_symbol));
+    }
+    else if(no->node_class == FLOAT_TO_INT){
+        strcpy(str, float_to_int_TAC(no, register_symbol));
+    }
+    else{
+        strcpy(str, "mov ");
+        strcat(str, register_symbol);
+        strcat(str, ", ");
+        strcat(str, no->value);
+        strcat(str, "\n");
+    }
+    return str;
+}
+
 char* ari_instruction_TAC(node *no, char* register_symbol){
     char *str = (char *)malloc((1 + 500) * sizeof(char));
     if(no->left->node_class == ARITHIMETIC_EXPRESSION){
         strcpy(str, ari_instruction_TAC(no->left, register_symbol));
+        if(no->right->node_class == ARITHIMETIC_EXPRESSION){
+            strcat(str, ari_instruction_TAC(no->right, "$5"));
+        }
+        else{
+            strcat(str, convert_instruction_TAC(no->right, "$5"));
+        }
         if(strcmp(no->value, "+") == 0){
             strcat(str, "add ");
         } 
@@ -1377,12 +1436,11 @@ char* ari_instruction_TAC(node *no, char* register_symbol){
         strcat(str, register_symbol);
         strcat(str, ", ");
         strcat(str, register_symbol);
-        strcat(str, ", ");
-        strcat(str, no->right->value);
-        strcat(str, "\n");
+        strcat(str, ", $5\n");
     }
     else if(no->right->node_class == ARITHIMETIC_EXPRESSION){
         strcpy(str, ari_instruction_TAC(no->right, register_symbol));
+        strcat(str, convert_instruction_TAC(no->left, "$5"));
         if(strcmp(no->value, "+") == 0){
             strcat(str, "add ");
         } 
@@ -1396,31 +1454,27 @@ char* ari_instruction_TAC(node *no, char* register_symbol){
             strcat(str, "div ");
         }
         strcat(str, register_symbol);
-        strcat(str, ", ");
-        strcat(str, no->left->value);
-        strcat(str, ", ");
+        strcat(str, ", $5, ");
         strcat(str, register_symbol);
         strcat(str, "\n");
     }
     else{
+        strcpy(str, convert_instruction_TAC(no->left, "$5"));
+        strcat(str, convert_instruction_TAC(no->right, "$6"));
         if(strcmp(no->value, "+") == 0){
-            strcpy(str, "add ");
+            strcat(str, "add ");
         } 
         else if(strcmp(no->value, "-") == 0){
-            strcpy(str, "sub ");
+            strcat(str, "sub ");
         } 
         else if(strcmp(no->value, "*") == 0){
-            strcpy(str, "mul ");
+            strcat(str, "mul ");
         } 
         else if(strcmp(no->value, "/") == 0){
-            strcpy(str, "div ");
+            strcat(str, "div ");
         }
         strcat(str, register_symbol);
-        strcat(str, ", ");
-        strcat(str, no->left->value);
-        strcat(str, ", ");
-        strcat(str, no->right->value);
-        strcat(str, "\n");
+        strcat(str, ", $5, $6\n");
     }
     return str;
 }
