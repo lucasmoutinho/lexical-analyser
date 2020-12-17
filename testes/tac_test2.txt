@@ -3,6 +3,11 @@ int main(){
     string stringTeste;
     int a;
     a = (2 + (3.0/1));
-    print(a);
+    if(5 == a){
+        print(0);
+    }
+    else{
+        print(a);
+    }
     return 0;
 }
